@@ -1,4 +1,4 @@
-# Redis Scala client
+# Redis Scala client [![Build Status](https://secure.travis-ci.org/debasishg/scala-redis.png)](http://travis-ci.org/debasishg/scala-redis)
 
 ## Key features of the library
 
