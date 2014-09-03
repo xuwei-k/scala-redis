@@ -1,18 +1,16 @@
 package com.redis
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
+import org.scalatest._
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 
 
 @RunWith(classOf[JUnitRunner])
-class PipelineSpec extends FunSpec 
+class PipelineSpec extends FunSpec
                    with Matchers
                    with BeforeAndAfterEach
-                   with BeforeAndAfterAll {
+                   with BeforeAndAfterAll
+                   with Inside {
 
   val r = new RedisClient("localhost", 6379)
 
@@ -70,6 +68,18 @@ class PipelineSpec extends FunSpec
       } should equal(None)
       r.get("a") should equal(None)
     }
+  }
+
+  it("should publish without breaking the other commands in the pipeline") {
+    val res = r.pipeline { p =>
+      p.set("key", "debasish")
+      p.publish("a", "message")
+      p.get("key")
+      p.publish("a", "message2")
+      p.get("key1")
+    }.get
+
+    inside(res) { case List(true, Some(_), Some("debasish"), Some(_), None) => }
   }
 
   import scala.concurrent.ExecutionContext.Implicits.global

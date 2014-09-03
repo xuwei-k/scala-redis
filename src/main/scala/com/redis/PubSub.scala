@@ -20,7 +20,7 @@ case class M(origChannel: String, message: String) extends PubSubMessage
 case class E(e: java.lang.Throwable) extends PubSubMessage
 
 import Util._
-trait PubSub { self: Redis =>
+trait PubSub extends PubOperations { self: Redis =>
   var pubSub: Boolean = _
 
   class Consumer(fn: PubSubMessage => Any) extends Runnable {
@@ -106,7 +106,9 @@ trait PubSub { self: Redis =>
   def unsubscribe(channel: String, channels: String*) = {
     send("UNSUBSCRIBE", channel :: channels.toList)(())
   }
+}
 
+trait PubOperations { self: Redis =>
   def publish(channel: String, msg: String): Option[Long] = {
     send("PUBLISH", List(channel, msg))(asLong)
   }
