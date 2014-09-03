@@ -120,7 +120,7 @@ private [redis] trait R extends Reply {
   def asBulk[T](implicit parse: Parse[T]): Option[T] =  receive(bulkReply) map parse
   
   def asBulkWithTime[T](implicit parse: Parse[T]): Option[T] = receive(bulkReply orElse multiBulkReply) match {
-    case x: Some[Array[Byte]] => x.map(parse(_))
+    case Some(bytes: Array[Byte]) => Some(parse(bytes))
     case _ => None
   }
 
