@@ -4,12 +4,10 @@ object Util {
   object Break extends RuntimeException;
   def break { throw Break }
   def whileTrue(block: => Unit) {
-    try {
-      while (true)
-        try {
-          block
-        } catch { case Break => return }
-    }
+    while (true)
+      try {
+        block
+      } catch { case Break => return }
   }
 }
 
