@@ -30,7 +30,7 @@ Add to `Build.scala` or `build.sbt`
 
 ```scala
 libraryDependencies ++= Seq(
-    "net.debasishg" % "redisclient_2.10" % "2.12"
+    "net.debasishg" %% "redisclient" % "2.13"
 )
 ```
 
@@ -127,7 +127,7 @@ def lp(msgs: List[String]) = {
 
 Using a combination of pooling and futures, scala-redis can be throttled for more parallelism. This is the typical recommended strategy if you are looking forward to scale up using this redis client. Here's a sample usage .. we are doing a parallel throttle of an lpush, rpush and set operations in redis, each repeated a number of times ..
 
-If we have a pool initialized, then we can use the pool to repeat the following operations. 
+If we have a pool initialized, then we can use the pool to repeat the following operations.
 
 ```scala
 // lpush
@@ -187,9 +187,9 @@ import system.dispatcher
 
 val timeout = 5 minutes
 
-private[this] def flow[A](noOfRecipients: Int, opsPerClient: Int, keyPrefix: String, 
+private[this] def flow[A](noOfRecipients: Int, opsPerClient: Int, keyPrefix: String,
   fn: (Int, String) => A) = {
-  (1 to noOfRecipients) map {i => 
+  (1 to noOfRecipients) map {i =>
     Future {
       fn(opsPerClient, "list_" + i)
     }
