@@ -8,6 +8,9 @@ trait HyperLogLogOperations { self: Redis =>
   def pfadd(key: Any, value: Any, values: Any*): Long =
     send("PFADD", List(key, value) ::: values.toList)(asLong).get
 
-  def pfcount(key: Any): Long =
-    send("PFCOUNT", List(key))(asLong).get
+  def pfcount(keys: Any*): Long =
+    send("PFCOUNT", keys.toList)(asLong).get
+
+  def pfmerge(destination: Any, sources: Any*) =
+    send("PFMERGE", List(destination) ::: sources.toList)(asBoolean)
 }

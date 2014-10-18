@@ -46,8 +46,23 @@ class HyperLogLogOperationsSpec extends FunSpec
     }
 
     it("should return estimated cardinality") {
-      r.pfadd("hll-1", "value1") should equal(1)
-      r.pfcount("hll-1") should equal(1)
+      r.pfadd("hll-card", "value1") should equal(1)
+      r.pfcount("hll-card") should equal(1)
+    }
+
+    it("should return estimated cardinality of unioned keys") {
+      r.pfadd("hll-union-1", "value1")
+      r.pfadd("hll-union-2", "value2")
+      r.pfcount("hll-union-1", "hll-union-2") should equal(2)
+    }
+  }
+
+  describe("pfmerge") {
+    it("should merge existing entries") {
+      r.pfadd("hll-merge-source-1", "value1")
+      r.pfadd("hll-merge-source-2", "value2")
+      r.pfmerge("hell-merge-destination", "hll-merge-source-1", "hll-merge-source-2")
+      r.pfcount("hell-merge-destination") should equal(2)
     }
   }
 }
