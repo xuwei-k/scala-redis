@@ -1,7 +1,8 @@
 package com.redis
 
-import serialization.Format
 import java.net.SocketException
+
+import com.redis.serialization.Format
 
 object RedisClient {
   trait SortOrder
@@ -90,7 +91,7 @@ trait RedisCommand extends Redis with Operations
   
 
 class RedisClient(override val host: String, override val port: Int,
-    override val database: Int = 0, override val secret: Option[Any] = None)
+    override val database: Int = 0, override val secret: Option[Any] = None, override val timeout : Int = 0)
   extends RedisCommand with PubSub {
 
   initialize
@@ -116,10 +117,8 @@ class RedisClient(override val host: String, override val port: Int,
     }
   }
   
-  import serialization.Parse
-
-  import scala.concurrent.{Promise, Future}
   import scala.concurrent.ExecutionContext.Implicits.global
+  import scala.concurrent.{Future, Promise}
   import scala.util.Try
 
   /**
@@ -170,7 +169,7 @@ class RedisClient(override val host: String, override val port: Int,
   }
 
   class PipelineClient(parent: RedisClient) extends RedisCommand {
-    import serialization.Parse
+    import com.redis.serialization.Parse
 
     var handlers: Vector[() => Any] = Vector.empty
 
@@ -189,6 +188,7 @@ class RedisClient(override val host: String, override val port: Int,
 
     val host = parent.host
     val port = parent.port
+    val timeout = parent.timeout
     override val secret = parent.secret
     override val database = parent.database
 

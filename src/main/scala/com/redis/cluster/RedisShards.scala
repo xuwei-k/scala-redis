@@ -1,21 +1,14 @@
 package com.redis.cluster
 
-import java.util.zip.CRC32
-import scala.collection.immutable.TreeSet
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-
 import com.redis._
-
-import serialization._
-
-
-import scala.util.matching.Regex
+import com.redis.serialization._
 
 abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
 
   // not needed at cluster level
   override val host = null
   override val port = 0
+  override val timeout = 0
 
   // abstract val
   val keyTag: Option[KeyTag]
@@ -221,8 +214,7 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   override def srandmember[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.srandmember(key, count))
 
 
-  import Commands._
-  import RedisClient._
+  import com.redis.RedisClient._
 
   /**
    * SortedSetOperations

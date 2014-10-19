@@ -1,13 +1,14 @@
 package com.redis
 
 import java.io._
-import java.net.{Socket, InetSocketAddress}
+import java.net.Socket
 
-import serialization.Parse.parseStringSafe
+import com.redis.serialization.Parse.parseStringSafe
 
 trait IO extends Log {
   val host: String
   val port: Int
+  val timeout: Int
 
   var socket: Socket = _
   var out: OutputStream = _
@@ -23,7 +24,7 @@ trait IO extends Log {
     try {
       socket = new Socket(host, port)
 
-      socket.setSoTimeout(0)
+      socket.setSoTimeout(timeout)
       socket.setKeepAlive(true)
       socket.setTcpNoDelay(true)
 

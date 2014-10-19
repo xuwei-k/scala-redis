@@ -33,8 +33,8 @@ trait Deque[A] {
 }
 
 import com.redis.ListOperations
+import com.redis.serialization.Parse.Implicits._
 import com.redis.serialization._
-import Parse.Implicits._
 
 abstract class RedisDeque[A](val blocking: Boolean = false, val timeoutInSecs: Int = 0)(implicit private val format: Format, private val parse: Parse[A])
   extends Deque[A] { self: ListOperations =>
@@ -73,13 +73,14 @@ abstract class RedisDeque[A](val blocking: Boolean = false, val timeoutInSecs: I
   }
 }
 
-import com.redis.{Redis, RedisCommand}
+import com.redis.RedisCommand
 
-class RedisDequeClient(val h: String, val p: Int, val d: Int = 0, val s: Option[Any] = None) {
+class RedisDequeClient(val h: String, val p: Int, val d: Int = 0, val s: Option[Any] = None, val t : Int =0) {
   def getDeque[A](k: String, blocking: Boolean = false, timeoutInSecs: Int = 0)(implicit format: Format, parse: Parse[A]) =
     new RedisDeque(blocking, timeoutInSecs)(format, parse) with RedisCommand {
       val host = h
       val port = p
+      val timeout = t
       val key = k
       override val database = d
       override val secret = s
