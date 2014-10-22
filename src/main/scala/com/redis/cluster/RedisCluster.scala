@@ -1,12 +1,7 @@
 package com.redis.cluster
 
-import java.util.zip.CRC32
-import scala.collection.immutable.TreeSet
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-
 import com.redis._
-
-import serialization._
+import com.redis.serialization._
 
 /**
  * Consistent hashing distributes keys across multiple servers. But there are situations
@@ -36,8 +31,6 @@ import serialization._
 trait KeyTag {
   def tag(key: Seq[Byte]): Option[Seq[Byte]]
 }
-
-import scala.util.matching.Regex
 object RegexKeyTag extends KeyTag {
 
   val tagStart = '{'.toByte
@@ -60,7 +53,7 @@ object NoOpKeyTag extends KeyTag {
  * a level of abstraction for each node decoupling it from the address. A node is now identified
  * by a name, so functions like <tt>replaceServer</tt> works seamlessly.
  */
-case class ClusterNode(nodename: String, host: String, port: Int, database: Int = 0, maxIdle: Int = 8, secret: Option[Any] = None){
+case class ClusterNode(nodename: String, host: String, port: Int, database: Int = 0, maxIdle: Int = 8, secret: Option[Any] = None, timeout : Int = 0){
   override def toString = nodename
 }
 
@@ -69,6 +62,7 @@ abstract class RedisCluster(hosts: ClusterNode*) extends RedisCommand {
   // not needed at cluster level
   override val host = null
   override val port = 0
+  override val timeout = 0
 
   // abstract val
   val keyTag: Option[KeyTag]
@@ -283,8 +277,7 @@ abstract class RedisCluster(hosts: ClusterNode*) extends RedisCommand {
   override def srandmember[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.srandmember(key, count))
 
 
-  import Commands._
-  import RedisClient._
+  import com.redis.RedisClient._
 
   /**
    * SortedSetOperations

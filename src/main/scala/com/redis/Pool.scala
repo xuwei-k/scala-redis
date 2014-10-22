@@ -4,12 +4,12 @@ import org.apache.commons.pool._
 import org.apache.commons.pool.impl._
 import com.redis.cluster.ClusterNode
 
-private [redis] class RedisClientFactory(val host: String, val port: Int, val database: Int = 0, val secret: Option[Any] = None) 
+private [redis] class RedisClientFactory(val host: String, val port: Int, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0)
   extends PoolableObjectFactory[RedisClient] {
 
   // when we make an object it's already connected
   def makeObject = {
-    new RedisClient(host, port, database, secret)
+    new RedisClient(host, port, database, secret, timeout)
   }
 
   // quit & disconnect
@@ -26,8 +26,8 @@ private [redis] class RedisClientFactory(val host: String, val port: Int, val da
   def activateObject(rc: RedisClient): Unit = {}
 }
 
-class RedisClientPool(val host: String, val port: Int, val maxIdle: Int = 8, val database: Int = 0, val secret: Option[Any] = None) {
-  val pool = new StackObjectPool(new RedisClientFactory(host, port, database, secret), maxIdle)
+class RedisClientPool(val host: String, val port: Int, val maxIdle: Int = 8, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0) {
+  val pool = new StackObjectPool(new RedisClientFactory(host, port, database, secret, timeout), maxIdle)
   override def toString = host + ":" + String.valueOf(port)
 
   def withClient[T](body: RedisClient => T) = {
@@ -48,6 +48,6 @@ class RedisClientPool(val host: String, val port: Int, val maxIdle: Int = 8, val
  * @param poolname must be unique
  */
 class IdentifiableRedisClientPool(val node: ClusterNode)
-  extends RedisClientPool (node.host, node.port, node.maxIdle, node.database, node.secret){
+  extends RedisClientPool (node.host, node.port, node.maxIdle, node.database, node.secret,node.timeout){
   override def toString = node.nodename
 }
