@@ -62,6 +62,7 @@ trait RedisCommand extends Redis with Operations
   with HashOperations
   with EvalOperations
   with PubOperations
+  with PingOperations
   with HyperLogLogOperations {
 
   val database: Int = 0
