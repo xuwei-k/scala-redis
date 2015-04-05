@@ -171,4 +171,10 @@ class OperationsSpec extends FunSpec
       r.lrange("skey", 0, 10).get should equal(List(Some(1), Some(3), Some(10), Some(30)))
     }
   }
+
+  describe("ping") {
+    it("should return pong") {
+      r.ping.get should equal("PONG")
+    }
+  }
 }
