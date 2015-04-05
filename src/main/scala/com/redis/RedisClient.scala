@@ -169,7 +169,7 @@ class RedisClient(override val host: String, override val port: Int,
     ps
   }
 
-  class PipelineClient(parent: RedisClient) extends RedisCommand {
+  class PipelineClient(parent: RedisClient) extends RedisCommand with PubOperations {
     import com.redis.serialization.Parse
 
     var handlers: Vector[() => Any] = Vector.empty

@@ -35,6 +35,17 @@ class PipelineSpec extends FunSpec
     }
   }
 
+  describe("pipeline1 with publish") {
+    it("should do pipelined commands") {
+      r.pipeline { p =>
+        p.set("key", "debasish")
+        p.get("key")
+        p.get("key1")
+        p.publish("a", "debasish ghosh")
+      }.get should equal(List(true, Some("debasish"), None, Some(0)))
+    }
+  }
+
   describe("pipeline2") {
     it("should do pipelined commands") {
       r.pipeline { p =>
