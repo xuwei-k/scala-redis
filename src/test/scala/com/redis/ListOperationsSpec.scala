@@ -60,7 +60,7 @@ class ListOperationsSpec extends FunSpec
   }
 
   describe("rpush") {
-    it("should add to the head of the list") {
+    it("should add to the tail of the list") {
       r.rpush("list-1", "foo") should equal(Some(1))
       r.rpush("list-1", "bar") should equal(Some(2))
     }
