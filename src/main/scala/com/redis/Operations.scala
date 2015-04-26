@@ -169,4 +169,15 @@ trait Operations { self: Redis =>
 
   // PING
   def ping: Option[String] = send("PING")(asString)
+
+  // WATCH (key1 key2 ..)
+  // Marks the given keys to be watched for conditional execution of a transaction.
+  // 
+  def watch(key: Any, keys: Any*)(implicit format: Format): Boolean =
+    send("WATCH", key :: keys.toList)(asBoolean)
+
+  // UNWATCH
+  // Flushes all the previously watched keys for a transaction
+  def unwatch(): Boolean =
+    send("UNWATCH")(asBoolean)
 }
