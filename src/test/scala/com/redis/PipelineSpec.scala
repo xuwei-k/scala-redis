@@ -133,4 +133,14 @@ class PipelineSpec extends FunSpec
       result.last.isInstanceOf[Exception] should be (true)
     }
   }
+
+  describe("pipeline hyperloglog") {
+    it("should do pipelined commands") {
+      val res =
+      r.pipeline { p =>
+        p.pfadd("kAdd", "v")
+      }
+      res.get should equal(List(Some(1)))
+    }
+  }
 }
