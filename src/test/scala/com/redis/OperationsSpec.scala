@@ -177,4 +177,16 @@ class OperationsSpec extends FunSpec
       r.ping.get should equal("PONG")
     }
   }
+
+  describe("getConfig") {
+    it("should return port") {
+      r.getConfig("port").get should equal(Map("port" -> Some("6379")))
+    }
+  }
+
+  describe("setConfig") {
+    it("should set config") {
+      r.setConfig("loglevel", "debug").get should equal("OK")
+    }
+  }
 }
