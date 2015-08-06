@@ -180,4 +180,14 @@ trait Operations { self: Redis =>
   // Flushes all the previously watched keys for a transaction
   def unwatch(): Boolean =
     send("UNWATCH")(asBoolean)
+
+  // CONFIG GET
+  def getConfig(key: Any = "*")(implicit format: Format): Option[Map[String, Option[String]]] =
+    send("CONFIG", List("GET", key))(asList).map { ls =>
+      ls.grouped(2).collect { case Some(k) :: v :: Nil => k -> v }.toMap
+    }
+
+  // CONFIG SET
+  def setConfig(key: Any, value: Any)(implicit format: Format): Option[String] =
+    send("CONFIG", List("SET", key, value))(asString)
 }
