@@ -69,10 +69,10 @@ trait RedisCommand extends Redis with Operations
   
   override def initialize : Boolean = {
     if(connect) {
-      selectDatabase
       secret.foreach {s => 
         auth(s)
       }
+      selectDatabase
       true
     } else {
       false
