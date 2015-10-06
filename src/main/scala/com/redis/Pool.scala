@@ -36,7 +36,7 @@ object RedisClientPool {
 
 class RedisClientPool(val host: String, val port: Int, val maxIdle: Int = 8, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0, 
     val maxConnections: Int = RedisClientPool.UNLIMITED_CONNECTIONS, val whenExhaustedBehavior: Byte = RedisClientPool.WHEN_EXHAUSTED_BLOCK, val poolWaitTimeout: Long = 3000) {
-  val pool = new GenericObjectPool(new RedisClientFactory(host, port, database, secret, timeout), maxConnections, whenExhaustedBehavior, poolWaitTimeout, maxIdle)
+  val pool = new GenericObjectPool(new RedisClientFactory(host, port, database, secret, timeout), maxConnections, whenExhaustedBehavior, poolWaitTimeout, maxIdle, false, true)
   override def toString = host + ":" + String.valueOf(port)
 
   def withClient[T](body: RedisClient => T) = {
