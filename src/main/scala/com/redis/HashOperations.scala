@@ -25,7 +25,7 @@ trait HashOperations { self: Redis =>
       }
     }
 
-  def hincrby(key: Any, field: Any, value: Int)(implicit format: Format): Option[Long] =
+  def hincrby(key: Any, field: Any, value: Long)(implicit format: Format): Option[Long] =
     send("HINCRBY", List(key, field, value))(asLong)
 
   def hincrbyfloat(key: Any, field: Any, value: Float)(implicit format: Format): Option[Float] =
