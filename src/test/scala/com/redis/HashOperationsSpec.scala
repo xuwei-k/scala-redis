@@ -69,7 +69,7 @@ class HashOperationsSpec extends FunSpec
       r.hmset("hash7", Map("field1" -> "val1", "field2" -> "val2"))
       r.hkeys("hash7") should be(Some(List("field1", "field2")))
       r.hvals("hash7") should be(Some(List("val1", "val2")))
-      r.hgetall("hash7") should be(Some(Map("field1" -> "val1", "field2" -> "val2")))
+      r.hgetall1("hash7") should be(Some(Map("field1" -> "val1", "field2" -> "val2")))
     }
 
     it("should increment map values by floats") {
