@@ -46,8 +46,15 @@ trait HashOperations { self: Redis =>
   def hvals[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[List[A]] =
     send("HVALS", List(key))(asList.map(_.flatten))
 
+  @deprecated("Use the more idiomatic variant hgetall1, which has the returned Map behavior more consistent. See issue https://github.com/debasishg/scala-redis/issues/122", "3.2")
   def hgetall[K,V](key: Any)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]): Option[Map[K,V]] =
     send("HGETALL", List(key))(asListPairs[K,V].map(_.flatten.toMap))
+
+  def hgetall1[K,V](key: Any)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]): Option[Map[K,V]] =
+    send("HGETALL", List(key))(asListPairs[K,V].map(_.flatten.toMap)) match {
+      case s@Some(m) if m.nonEmpty => s
+      case _ => None
+    }
 
   // HSCAN
   // Incrementally iterate hash fields and associated values (since 2.8)

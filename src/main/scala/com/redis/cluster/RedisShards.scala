@@ -288,4 +288,5 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   override def hkeys[A](key: Any)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.hkeys[A](key))
   override def hvals[A](key: Any)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.hvals[A](key))
   override def hgetall[K,V](key: Any)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]) = processForKey(key)(_.hgetall[K,V](key))
+  override def hgetall1[K,V](key: Any)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]) = processForKey(key)(_.hgetall1[K,V](key))
 }
