@@ -35,6 +35,22 @@ class SortedSetOperationsSpec extends FunSpec
     zadd("hackers", 1953, "richard stallman", (1916, "claude shannon"), (1969, "linus torvalds"), (1940, "alan kay"), (1912, "alan turing")) should equal(Some(5))
   }
 
+  private def addKeysWithSameScore = {
+    zadd("hackers-joker", 0, "a", (0, "b"), (0, "c"), (0, "d"))
+  }
+
+  describe("zrangebylex") {
+    it("should return the elements between min and max") {
+      addKeysWithSameScore
+      zrangebylex("hackers-joker", "[a", "[b", None).get should equal(List("a", "b"))
+    }
+
+    it("should return the elements between min and max with offset and count") {
+      addKeysWithSameScore
+      zrangebylex("hackers-joker", "[a", "[c", Some(0, 1)).get should equal(List("a"))
+    }
+  }
+
   describe("zadd") {
     it("should add based on proper sorted set semantics") {
       add

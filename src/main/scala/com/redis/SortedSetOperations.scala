@@ -2,33 +2,34 @@ package com.redis
 
 import serialization._
 
-trait SortedSetOperations { self: Redis =>
-  
+trait SortedSetOperations {
+  self: Redis =>
+
   // ZADD (Variadic: >= 2.4)
   // Add the specified members having the specified score to the sorted set stored at key.
   def zadd(key: Any, score: Double, member: Any, scoreVals: (Double, Any)*)(implicit format: Format): Option[Long] =
     send("ZADD", List(key, score, member) ::: scoreVals.toList.map(x => List(x._1, x._2)).flatten)(asLong)
-  
+
   // ZREM (Variadic: >= 2.4)
   // Remove the specified members from the sorted set value stored at key.
   def zrem(key: Any, member: Any, members: Any*)(implicit format: Format): Option[Long] =
     send("ZREM", List(key, member) ::: members.toList)(asLong)
-  
+
   // ZINCRBY
   // 
   def zincrby(key: Any, incr: Double, member: Any)(implicit format: Format): Option[Double] =
     send("ZINCRBY", List(key, incr, member))(asBulk(Parse.Implicits.parseDouble))
-  
+
   // ZCARD
   // 
   def zcard(key: Any)(implicit format: Format): Option[Long] =
     send("ZCARD", List(key))(asLong)
-  
+
   // ZSCORE
   // 
   def zscore(key: Any, element: Any)(implicit format: Format): Option[Double] =
     send("ZSCORE", List(key, element))(asBulk(Parse.Implicits.parseDouble))
-  
+
   // ZRANGE
   // 
   import Commands._
@@ -40,17 +41,27 @@ trait SortedSetOperations { self: Redis =>
   def zrangeWithScore[A](key: Any, start: Int = 0, end: Int = -1, sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[(A, Double)]] =
     send(if (sortAs == ASC) "ZRANGE" else "ZREVRANGE", List(key, start, end, "WITHSCORES"))(asListPairs(parse, Parse.Implicits.parseDouble).map(_.flatten))
 
+  def zrangebylex[A](key: Any, min: String, max: String, limit: Option[(Int, Int)])(implicit format: Format, parse: Parse[A]): Option[List[A]] = {
+    if (!limit.isEmpty) {
+      val params = limit.toList.flatMap(l => List(key, min, max, "LIMIT", l._1, l._2))
+      send("ZRANGEBYLEX", params)(asList.map(_.flatten))
+    }
+    else {
+      send("ZRANGEBYLEX", List(key, min, max))(asList.map(_.flatten))
+    }
+  }
+
   // ZRANGEBYSCORE
   // 
   def zrangebyscore[A](key: Any,
-          min: Double = Double.NegativeInfinity,
-          minInclusive: Boolean = true,
-          max: Double = Double.PositiveInfinity,
-          maxInclusive: Boolean = true,
-          limit: Option[(Int, Int)],
-          sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[A]] = {
+                       min: Double = Double.NegativeInfinity,
+                       minInclusive: Boolean = true,
+                       max: Double = Double.PositiveInfinity,
+                       maxInclusive: Boolean = true,
+                       limit: Option[(Int, Int)],
+                       sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[A]] = {
 
-    val (limitEntries, minParam, maxParam) = 
+    val (limitEntries, minParam, maxParam) =
       zrangebyScoreWithScoreInternal(min, minInclusive, max, maxInclusive, limit)
 
     val params = sortAs match {
@@ -61,14 +72,14 @@ trait SortedSetOperations { self: Redis =>
   }
 
   def zrangebyscoreWithScore[A](key: Any,
-          min: Double = Double.NegativeInfinity,
-          minInclusive: Boolean = true,
-          max: Double = Double.PositiveInfinity,
-          maxInclusive: Boolean = true,
-          limit: Option[(Int, Int)],
-          sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[(A, Double)]] = {
+                                min: Double = Double.NegativeInfinity,
+                                minInclusive: Boolean = true,
+                                max: Double = Double.PositiveInfinity,
+                                maxInclusive: Boolean = true,
+                                limit: Option[(Int, Int)],
+                                sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[(A, Double)]] = {
 
-    val (limitEntries, minParam, maxParam) = 
+    val (limitEntries, minParam, maxParam) =
       zrangebyScoreWithScoreInternal(min, minInclusive, max, maxInclusive, limit)
 
     val params = sortAs match {
@@ -79,17 +90,17 @@ trait SortedSetOperations { self: Redis =>
   }
 
   private def zrangebyScoreWithScoreInternal[A](
-          min: Double = Double.NegativeInfinity,
-          minInclusive: Boolean = true,
-          max: Double = Double.PositiveInfinity,
-          maxInclusive: Boolean = true,
-          limit: Option[(Int, Int)])
-          (implicit format: Format, parse: Parse[A]): (List[Any], String, String) = {
+                                                 min: Double = Double.NegativeInfinity,
+                                                 minInclusive: Boolean = true,
+                                                 max: Double = Double.PositiveInfinity,
+                                                 maxInclusive: Boolean = true,
+                                                 limit: Option[(Int, Int)])
+                                               (implicit format: Format, parse: Parse[A]): (List[Any], String, String) = {
 
-    val limitEntries = 
-      if(!limit.isEmpty) { 
+    val limitEntries =
+      if (!limit.isEmpty) {
         "LIMIT" :: limit.toList.flatMap(l => List(l._1, l._2))
-      } else { 
+      } else {
         List()
       }
 
@@ -119,7 +130,7 @@ trait SortedSetOperations { self: Redis =>
   def zunionstore(dstKey: Any, keys: Iterable[Any], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZUNIONSTORE", (Iterator(dstKey, keys.size) ++ keys.iterator ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
-  def zunionstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any,Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
+  def zunionstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any, Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZUNIONSTORE", (Iterator(dstKey, kws.size) ++ kws.iterator.map(_._1) ++ Iterator.single("WEIGHTS") ++ kws.iterator.map(_._2) ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
   // ZINTERSTORE
@@ -127,7 +138,7 @@ trait SortedSetOperations { self: Redis =>
   def zinterstore(dstKey: Any, keys: Iterable[Any], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZINTERSTORE", (Iterator(dstKey, keys.size) ++ keys.iterator ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
-  def zinterstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any,Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
+  def zinterstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any, Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZINTERSTORE", (Iterator(dstKey, kws.size) ++ kws.iterator.map(_._1) ++ Iterator.single("WEIGHTS") ++ kws.iterator.map(_._2) ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
   // ZCOUNT
@@ -138,6 +149,6 @@ trait SortedSetOperations { self: Redis =>
   // ZSCAN
   // Incrementally iterate sorted sets elements and associated scores (since 2.8)
   def zscan[A](key: Any, cursor: Int, pattern: Any = "*", count: Int = 10)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] =
-    send("ZSCAN", key :: cursor :: ((x: List[Any]) => if(pattern == "*") x else "match" :: pattern :: x)(if(count == 10) Nil else List("count", count)))(asPair)
+    send("ZSCAN", key :: cursor :: ((x: List[Any]) => if (pattern == "*") x else "match" :: pattern :: x) (if (count == 10) Nil else List("count", count)))(asPair)
 
 }
