@@ -2,6 +2,7 @@ package com.redis
 
 import java.io._
 import java.net.Socket
+import java.net.InetSocketAddress
 
 import com.redis.serialization.Parse.parseStringSafe
 
@@ -22,7 +23,8 @@ trait IO extends Log {
   // Connects the socket, and sets the input and output streams.
   def connect: Boolean = {
     try {
-      socket = new Socket(host, port)
+      socket = new Socket()
+      socket.connect(new InetSocketAddress (host, port), timeout)
 
       socket.setSoTimeout(timeout)
       socket.setKeepAlive(true)
