@@ -98,6 +98,15 @@ class RedisClient(override val host: String, override val port: Int,
   initialize
 
   def this() = this("localhost", 6379)
+  def this(connectionUri: java.net.URI) = this(
+    host = connectionUri.getHost,
+    port = connectionUri.getPort,
+    secret = Option(connectionUri.getUserInfo)
+      .flatMap(_.split(':') match {
+        case Array(_, password, _*) ⇒ Some(password)
+        case _ ⇒ None
+      })
+  )
   override def toString = host + ":" + String.valueOf(port)
 
   def pipeline(f: PipelineClient => Any): Option[List[Any]] = {
