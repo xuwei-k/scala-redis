@@ -1,8 +1,7 @@
 package com.redis
 
 import java.io._
-import java.net.Socket
-import java.net.InetSocketAddress
+import java.net.{InetSocketAddress, Socket, SocketTimeoutException}
 
 import com.redis.serialization.Parse.parseStringSafe
 
@@ -84,20 +83,27 @@ trait IO extends Log {
     var delimiter = crlf
     var found: List[Int] = Nil
     var build = new scala.collection.mutable.ArrayBuilder.ofByte
-    while (delimiter != Nil) {
-      val next = in.read
-      if (next < 0) return null
-      if (next == delimiter.head) {
-        found ::= delimiter.head
-        delimiter = delimiter.tail
-      } else {
-        if (found != Nil) {
-          delimiter = crlf
-          build ++= found.reverseMap(_.toByte)
-          found = Nil
+    try {
+      while (delimiter != Nil) {
+        val next = in.read
+        if (next < 0) return null
+        if (next == delimiter.head) {
+          found ::= delimiter.head
+          delimiter = delimiter.tail
+        } else {
+          if (found != Nil) {
+            delimiter = crlf
+            build ++= found.reverseMap(_.toByte)
+            found = Nil
+          }
+          build += next.toByte
         }
-        build += next.toByte
       }
+    } catch {
+      case ex: SocketTimeoutException if timeout > 0 =>
+        // can't ignore response without a blocking socket-read so we close this socket instead
+        disconnect
+        throw ex
     }
     build.result
   }
@@ -106,8 +112,15 @@ trait IO extends Log {
     if(!connected) connect
     val arr = new Array[Byte](count)
     var cur = 0
-    while (cur < count) {
-      cur += in.read(arr, cur, count - cur)
+    try {
+      while (cur < count) {
+        cur += in.read(arr, cur, count - cur)
+      }
+    } catch {
+      case ex: SocketTimeoutException if timeout > 0 =>
+        // can't ignore response without a blocking socket-read so we close this socket instead
+        disconnect
+        throw ex
     }
     arr
   }
