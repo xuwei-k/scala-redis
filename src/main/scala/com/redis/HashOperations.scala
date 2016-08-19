@@ -3,8 +3,8 @@ package com.redis
 import serialization._
 
 trait HashOperations { self: Redis =>
-  def hset(key: Any, field: Any, value: Any)(implicit format: Format): Boolean =
-    send("HSET", List(key, field, value))(asBoolean)
+  def hset(key: Any, field: Any, value: Any)(implicit format: Format): Option[Long] =
+    send("HSET", List(key, field, value))(asLong)
 
   def hsetnx(key: Any, field: Any, value: Any)(implicit format: Format): Boolean =
     send("HSETNX", List(key, field, value))(asBoolean)
