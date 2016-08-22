@@ -32,6 +32,16 @@ class HashOperationsSpec extends FunSpec
       r.hset("hash1", "field1", "val")
       r.hget("hash1", "field1") should be(Some("val"))
     }
+
+    it("should return true if field did not exist and was inserted") {
+      r.hdel("hash1", "field1")
+      r.hset("hash1", "field1", "val") should be(true)
+    }
+
+    it("should return false if field existed before and was overwritten") {
+      r.hset("hash1", "field1", "val")
+      r.hset("hash1", "field1", "val") should be(false)
+    }
     
     it("should set and get maps") {
       r.hmset("hash2", Map("field1" -> "val1", "field2" -> "val2"))
@@ -80,6 +90,23 @@ class HashOperationsSpec extends FunSpec
       r.hset("hash1", "field1", "abc")
       val thrown = the [Exception] thrownBy { r.hincrbyfloat("hash1", "field1", 2.0e2f) }
       thrown.getMessage should include("hash value is not a valid float")
+    }
+  }
+
+  describe("hset1") {
+    it("should set field") {
+      r.hset1("hash1", "field1", "val")
+      r.hget("hash1", "field1") should be(Some("val"))
+    }
+
+    it("should return Some(1) if field did not exist and was inserted") {
+      r.hdel("hash1", "field1")
+      r.hset1("hash1", "field1", "val") should be(Some(1L))
+    }
+
+    it("should return Some(0) if field existed before and was overwritten") {
+      r.hset1("hash1", "field1", "val")
+      r.hset1("hash1", "field1", "val") should be(Some(0L))
     }
   }
 
