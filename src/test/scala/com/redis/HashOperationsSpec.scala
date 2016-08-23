@@ -99,12 +99,12 @@ class HashOperationsSpec extends FunSpec
       r.hget("hash1", "field1") should be(Some("val"))
     }
 
-    it("should return Some(1) if field did not exist and was inserted") {
+    it("should return Some(1L) if field did not exist and was inserted") {
       r.hdel("hash1", "field1")
       r.hset1("hash1", "field1", "val") should be(Some(1L))
     }
 
-    it("should return Some(0) if field existed before and was overwritten") {
+    it("should return Some(0L) if field existed before and was overwritten") {
       r.hset1("hash1", "field1", "val")
       r.hset1("hash1", "field1", "val") should be(Some(0L))
     }
