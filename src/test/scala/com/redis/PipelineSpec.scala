@@ -153,4 +153,14 @@ class PipelineSpec extends FunSpec
       res.get should equal(List(Some(float)))
     }
   }
+
+  describe("incrbyfloat inside a pipeline") {
+    it("should succeed with a correct response") {
+      val float = 1.45.toFloat
+      val res = r.pipeline { p =>
+        p.incrbyfloat("key_incr", float)
+      }
+      res.get should equal(List(Some(float)))
+    }
+  }
 }
