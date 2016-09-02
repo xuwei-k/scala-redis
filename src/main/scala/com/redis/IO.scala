@@ -84,7 +84,7 @@ trait IO extends Log {
     var found: List[Int] = Nil
     var build = new scala.collection.mutable.ArrayBuilder.ofByte
     try {
-      while (delimiter != Nil) {
+      while (delimiter != Nil && in != null) {
         val next = in.read
         if (next < 0) return null
         if (next == delimiter.head) {
