@@ -46,4 +46,24 @@ class GeoOperationsSpec extends FunSpec
       out should be(Some(List("sqc8b49rny0", "sqdtr74hyu0")))
     }
   }
+
+  describe("geodist"){
+    it("should correctly compute the distance between two objects, defaulting to meters"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.geodist("Sicily", "Palermo", "Catania", None)
+      out.isDefined should be(true)
+      out.get should startWith("166274.151") //precision handling ???
+    }
+    it("should correctly compute the distance between two objects in kilometers"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.geodist("Sicily", "Palermo", "Catania", Some("km"))
+      out.isDefined should be(true)
+      out.get should startWith("166.274") //precision handling ???
+    }
+    it("should return an empty value if a member can't be found"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.geodist("Sicily", "Palermo", "testfail", Some("km"))
+      out.isDefined should be(false)
+    }
+  }
 }

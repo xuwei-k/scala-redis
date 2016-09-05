@@ -18,4 +18,8 @@ trait GeoOperations { self: Redis =>
     send("GEOHASH", key :: members.toList)(asList.map(_.flatten))
   }
 
+  def geodist(key: Any, m1: Any, m2: Any, unit: Option[Any]): Option[String] = {
+    send("GEODIST", List(key, m1, m2) ++ unit.toList)(asBulk[String])
+  }
+
 }
