@@ -32,6 +32,11 @@ class GeoOperationsSpec extends FunSpec
       val out = r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
       out should  be(Some(2))
     }
+    it("should not add a value twice") {
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      out should  be(Some(0))
+    }
   }
 
   describe("geohash") {
