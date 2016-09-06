@@ -134,7 +134,7 @@ private [redis] trait Reply {
   }
 }
 
-private [redis] trait R extends Reply {
+private [redis] trait R extends Reply with GeoReceive {
   def asString: Option[String] = receive(singleLineReply) map Parsers.parseString
 
   def asBulk[T](implicit parse: Parse[T]): Option[T] =  receive(bulkReply) map parse
