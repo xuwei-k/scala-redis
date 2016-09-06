@@ -106,13 +106,13 @@ trait GeoOperations { self: Redis =>
                 withDist: Boolean,
                 withHash: Boolean,
                 count: Option[Int],
-                desc: Boolean,
+                sort: Option[Any],
                 store: Option[Any],
                 storeDist: Option[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[GeoRadiusMember]]] = {
     val radArgs = List( if (withCoord) List("WITHCOORD") else Nil
         , if (withDist) List("WITHDIST") else Nil
         , if (withHash) List("WITHHASH") else Nil
-        , if (desc) List("DESC") else Nil
+        , sort.fold[List[Any]](Nil)(b => List(b))
         , count.fold[List[Any]](Nil)(b => List("COUNT", b))
         , store.fold[List[Any]](Nil)(b => List("STORE", b))
         , storeDist.fold[List[Any]](Nil)(b => List("STOREDIST", b))

@@ -93,7 +93,7 @@ class GeoOperationsSpec extends FunSpec
   describe("georadius"){
     it("should correctly retrieve members in the radius with their hash and dist"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
-      val out = r.georadius("Sicily", "15", "37", "200", "km", false, true, true, None, false, None, None)
+      val out = r.georadius("Sicily", "15", "37", "200", "km", false, true, true, None, None, None, None)
       out should equal(
         Some(List(
           Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("190.4424"),None)),
@@ -102,7 +102,7 @@ class GeoOperationsSpec extends FunSpec
     }
     it("should correctly retrieve members in the radius with their name only"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
-      val out = r.georadius("Sicily", "15", "37", "200", "km", false, false, false, None, false, None, None)
+      val out = r.georadius("Sicily", "15", "37", "200", "km", false, false, false, None, None, None, None)
       out should equal(
         Some(List(
           Some(GeoRadiusMember(Some("Palermo"),None,None,None)),
@@ -111,11 +111,40 @@ class GeoOperationsSpec extends FunSpec
     }
     it("should correctly retrieve members in the radius with their hash, dist and coords"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
-      val out = r.georadius("Sicily", "15", "37", "200", "km", true, true, true, None, false, None, None)
+      val out = r.georadius("Sicily", "15", "37", "200", "km", true, true, true, None, None, None, None)
       out should equal(
         Some(List(
           Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("190.4424"),Some(("13.36138933897018433","38.11555639549629859")))),
           Some(GeoRadiusMember(Some("Catania"),Some(3479447370796909L),Some("56.4413"), Some(("15.08726745843887329","37.50266842333162032"))))
+        ))
+      )
+    }
+    it("should correctly retrieve members in the radius with their hash, dist and coords in ascending order"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.georadius("Sicily", "15", "37", "200", "km", true, true, true, None, Some("ASC"), None, None)
+      out should equal(
+        Some(List(
+          Some(GeoRadiusMember(Some("Catania"),Some(3479447370796909L),Some("56.4413"), Some(("15.08726745843887329","37.50266842333162032")))),
+          Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("190.4424"),Some(("13.36138933897018433","38.11555639549629859"))))
+        ))
+      )
+    }
+    it("should correctly retrieve members in the radius with their hash, dist and coords in descending order"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.georadius("Sicily", "15", "37", "200", "km", true, true, true, None, Some("DESC"), None, None)
+      out should equal(
+        Some(List(
+          Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("190.4424"),Some(("13.36138933897018433","38.11555639549629859")))),
+          Some(GeoRadiusMember(Some("Catania"),Some(3479447370796909L),Some("56.4413"), Some(("15.08726745843887329","37.50266842333162032"))))
+        ))
+      )
+    }
+    it("should correctly limit the returned members in the radius"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.georadius("Sicily", "15", "37", "200", "km", false, false, false, Some(1), None, None, None)
+      out should equal(
+        Some(List(
+          Some(GeoRadiusMember(Some("Catania"),None,None,None))
         ))
       )
     }
