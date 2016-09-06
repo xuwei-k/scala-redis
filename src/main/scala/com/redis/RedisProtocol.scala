@@ -61,16 +61,18 @@ private [redis] trait Reply {
     case (INT, s) => Some(s)
   }
 
+  def bulkRead(s: Array[Byte]) =
+    Parsers.parseInt(s) match {
+      case -1 => None
+      case l =>
+        val str = readCounted(l)
+        val ignore = readLine // trailing newline
+        Some(str)
+    }
+
   val bulkReply: SingleReply = {
-    case (BULK, s) => 
-      Parsers.parseInt(s) match {
-        case -1 => None
-        case l => {
-          val str = readCounted(l)
-          val ignore = readLine // trailing newline
-          Some(str)
-        }
-      }
+    case (BULK, s) =>
+      bulkRead(s)
   }
 
   val multiBulkReply: MultiReply = {

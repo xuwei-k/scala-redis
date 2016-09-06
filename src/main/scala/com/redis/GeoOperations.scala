@@ -33,14 +33,7 @@ trait GeoReceive { self: Reply =>
 
   val phaseThree: PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]] = {
     case (BULK, s, a) =>
-      val retrieved = Parsers.parseInt(s) match {
-        case -1 => None
-        case l =>
-          val str = readCounted(l)
-          val ignore = readLine // trailing newline
-          Some(str)
-        case _ => None
-      }
+      val retrieved = bulkRead(s)
       retrieved.map{ ret =>
         a.fold(GeoRadiusMember(Some(ret))){ some =>
           some.member.fold(GeoRadiusMember(Some(ret))){_ => some.copy(dist = Some(ret))}
@@ -59,14 +52,7 @@ trait GeoReceive { self: Reply =>
 
   val phaseTwo: Reply[Option[GeoRadiusMember]] = {
     case (BULK, s) =>
-      Parsers.parseInt(s) match {
-        case -1 => None
-        case l =>
-          val str = readCounted(l)
-          val ignore = readLine // trailing newline
-          Some(GeoRadiusMember(Some(str)))
-        case _ => None
-      }
+      bulkRead(s).map(str => GeoRadiusMember(Some(str)))
     case (MULTI, str) =>
       Parsers.parseInt(str) match {
         case -1 => None
