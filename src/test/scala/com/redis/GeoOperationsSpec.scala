@@ -39,6 +39,29 @@ class GeoOperationsSpec extends FunSpec
     }
   }
 
+  describe("geopos") {
+    it("should correctly expose coordinates of requested members"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.geopos("Sicily", List("Catania", "Palermo", "testFail", "TestTest"))
+      out should equal(
+        Some(List(
+          Some(List(Some("15.08726745843887329"), Some("37.50266842333162032"))),
+          Some(List(Some("13.36138933897018433"), Some("38.11555639549629859"))),
+          None,
+          None))
+      )
+    }
+    it("correctly handle empty requested members"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.geopos("Sicily", List("testFail", "TestTest"))
+      out should equal(
+        Some(List(
+          None,
+          None))
+      )
+    }
+  }
+
   describe("geohash") {
     it("should expose correctly the stored hash"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))

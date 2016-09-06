@@ -40,6 +40,7 @@ private [redis] trait Reply {
   type Reply[T] = PartialFunction[(Char, Array[Byte]), T]
   type SingleReply = Reply[Option[Array[Byte]]]
   type MultiReply = Reply[Option[List[Option[Array[Byte]]]]]
+  type MultiNestedReply = Reply[Option[List[Option[List[Option[Array[Byte]]]]]]]
   type PairReply = Reply[Option[(Option[Array[Byte]], Option[List[Option[Array[Byte]]]])]]
 
   def readLine: Array[Byte]
@@ -77,6 +78,14 @@ private [redis] trait Reply {
       Parsers.parseInt(str) match {
         case -1 => None
         case n => Some(List.fill(n)(receive(bulkReply orElse singleLineReply)))
+      }
+  }
+
+  val multiBulkNested: MultiNestedReply = {
+    case (MULTI, str) =>
+      Parsers.parseInt(str) match {
+        case -1 => None
+        case n => Some(List.fill(n)(receive(multiBulkReply)))
       }
   }
 

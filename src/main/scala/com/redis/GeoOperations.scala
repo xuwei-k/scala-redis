@@ -14,6 +14,10 @@ trait GeoOperations { self: Redis =>
     send("GEOADD", key :: flattenProduct3(members))(asInt)
   }
 
+  def geopos[A](key: Any, members: Iterable[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[List[Option[A]]]]] = {
+    send("GEOPOS", key :: members.toList)(receive(multiBulkNested).map(_.map(_.map(_.map(_.map(parse))))))
+  }
+
   def geohash[A](key: Any, members: Iterable[Any])(implicit format: Format, parse: Parse[A]): Option[List[A]]= {
     send("GEOHASH", key :: members.toList)(asList.map(_.flatten))
   }
