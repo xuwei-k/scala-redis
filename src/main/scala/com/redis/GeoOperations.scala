@@ -117,4 +117,26 @@ trait GeoOperations { self: Redis =>
     send("GEORADIUS", List(key, longitude, latitude, radius, unit) ++ radArgs)(receive(geoRadiusMemberReply))
   }
 
+  def georadiusbymember[A](key: Any,
+                   member: Any,
+                   radius: Any,
+                   unit: Any,
+                   withCoord: Boolean,
+                   withDist: Boolean,
+                   withHash: Boolean,
+                   count: Option[Int],
+                   sort: Option[Any],
+                   store: Option[Any],
+                   storeDist: Option[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[GeoRadiusMember]]] = {
+    val radArgs = List( if (withCoord) List("WITHCOORD") else Nil
+      , if (withDist) List("WITHDIST") else Nil
+      , if (withHash) List("WITHHASH") else Nil
+      , sort.fold[List[Any]](Nil)(b => List(b))
+      , count.fold[List[Any]](Nil)(b => List("COUNT", b))
+      , store.fold[List[Any]](Nil)(b => List("STORE", b))
+      , storeDist.fold[List[Any]](Nil)(b => List("STOREDIST", b))
+    ).flatMap(x=>x)
+    send("GEORADIUSBYMEMBER", List(key, member, radius, unit) ++ radArgs)(receive(geoRadiusMemberReply))
+  }
+
 }

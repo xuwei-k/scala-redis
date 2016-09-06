@@ -149,4 +149,53 @@ class GeoOperationsSpec extends FunSpec
       )
     }
   }
+  describe("georadiusbymember"){
+    it("should correctly retrieve members in the radius with their hash and dist"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania"), ("13.583333", "37.316667", "Agrigento")))
+      val out = r.georadiusbymember("Sicily", "Agrigento", "100", "km", false, true, true, None, None, None, None)
+      val act = out.get
+      act.size should equal(2)
+      act should contain (Some(GeoRadiusMember(Some("Agrigento"),Some(3479030013248308L),Some("0.0000"),None)))
+      act should contain (Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("90.9778"),None)))
+    }
+    it("should correctly retrieve members in the radius with their name only"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania"), ("13.583333", "37.316667", "Agrigento")))
+      val out = r.georadiusbymember("Sicily", "Agrigento", "100", "km", false, false, false, None, None, None, None)
+      val act = out.get
+      act.size should equal(2)
+      act should contain (Some(GeoRadiusMember(Some("Agrigento"),None,None,None)))
+      act should contain (Some(GeoRadiusMember(Some("Palermo"),None,None,None)))
+    }
+    it("should correctly retrieve members in the radius with their hash, dist and coords"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania"), ("13.583333", "37.316667", "Agrigento")))
+      val out = r.georadiusbymember("Sicily", "Agrigento", "100", "km", true, true, true, None, None, None, None)
+      val act = out.get
+      act.size should equal(2)
+      act should contain(Some(GeoRadiusMember(Some("Agrigento"),Some(3479030013248308L),Some("0.0000"),Some(("13.5833314061164856","37.31666804993816555")))))
+      act should contain(Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("90.9778"),Some(("13.36138933897018433","38.11555639549629859")))))
+    }
+    it("should correctly retrieve members in the radius with their hash, dist and coords in ascending order"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania"), ("13.583333", "37.316667", "Agrigento")))
+      val out = r.georadiusbymember("Sicily", "Agrigento", "100", "km", true, true, true, None, Some("ASC"), None, None)
+      val act = out.get
+      act.size should equal(2)
+      act.head should equal(Some(GeoRadiusMember(Some("Agrigento"),Some(3479030013248308L),Some("0.0000"),Some(("13.5833314061164856","37.31666804993816555")))))
+      act.tail.head should equal(Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("90.9778"),Some(("13.36138933897018433","38.11555639549629859")))))
+    }
+    it("should correctly retrieve members in the radius with their hash, dist and coords in descending order"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania"), ("13.583333", "37.316667", "Agrigento")))
+      val out = r.georadiusbymember("Sicily", "Agrigento", "100", "km", true, true, true, None, Some("DESC"), None, None)
+      val act = out.get
+      act.size should equal(2)
+      act.head should equal(Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("90.9778"),Some(("13.36138933897018433","38.11555639549629859")))))
+      act.tail.head should equal(Some(GeoRadiusMember(Some("Agrigento"),Some(3479030013248308L),Some("0.0000"),Some(("13.5833314061164856","37.31666804993816555")))))
+    }
+    it("should correctly limit the returned members in the radius"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania"), ("13.583333", "37.316667", "Agrigento")))
+      val out = r.georadiusbymember("Sicily", "Agrigento", "100", "km", false, false, false, Some(1), None, None, None)
+      val act = out.get
+      act.size should equal(1)
+      act should contain(Some(GeoRadiusMember(Some("Agrigento"),None,None,None)))
+    }
+  }
 }
