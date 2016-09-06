@@ -140,21 +140,45 @@ private [redis] trait Reply {
       (pf orElse errReply) apply ((line(0).toChar,line.slice(1,line.length)))
   }
 
+  /**
+    * The following partial functions intend to manage the response from the GEORADIUS and GEORADIUSBYMEMBER commands.
+    * The code is not as generic as the previous ones as the exposed types are quite complex and really specific
+    * to these two commands
+    */
   type FoldReply = PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]]
 
-
-  def errFoldReply[A]: FoldReply = {
+  /**
+    * dedicated errorReply working with foldReceive.
+    * @tparam A
+    * @return
+    */
+  private def errFoldReply[A]: FoldReply = {
     case (ERR, s, _) => throw new Exception(Parsers.parseString(s))
     case x => throw new Exception("Protocol error: Got " + x + " as initial reply byte")
   }
 
-  def foldReceive[A](pf: FoldReply, a: Option[GeoRadiusMember]): Option[GeoRadiusMember] = readLine match {
+  /**
+    * dedicated receive used in our fold strategy
+    * @param pf
+    * @param a
+    * @tparam A
+    * @return
+    */
+  private def foldReceive[A](pf: FoldReply, a: Option[GeoRadiusMember]): Option[GeoRadiusMember] = readLine match {
     case null =>
       throw new RedisConnectionException("Connection dropped ..")
     case line =>
       (pf orElse errFoldReply) apply ((line(0).toChar,line.slice(1,line.length),a))
   }
 
+  /**
+    * Final step : we feed our accumulator with the data we find.
+    *
+    *  - First BULK : It is the member name
+    *  - Second BULK : It is the distance to the ref point
+    *  - INT : The member hash
+    *  - MULTI : The member coordinates. Should contain exactly two members.
+    */
   private val complexGeoRadius: PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]] = {
     case (BULK, s, a) =>
       val retrieved = bulkRead(s)
@@ -174,6 +198,17 @@ private [redis] trait Reply {
       }
   }
 
+  /**
+    * Second step : We must manage two distinct cases:
+    *
+    *  - The user performed a basic search, he will only receive strings listing the members found in the radius. A
+    *    BULK is exposed in this case.
+    *  - The user performed a complex search (with radius, coordinates or distance in the result). A more complex data structure
+    *    is exposed, as a MULTI containing a BULK, a possible BULK, a possible INT and a possible MULTI. We use a dedicated
+    *    strategy for this containing MULTI that will be able to manage all the possible cases. Rather than using a List.fill here,
+    *    we use a range and fold on it in order to be able to use an accumulator. This way, the accumulator is fed with each
+    *    member of the multi and changed accordingly
+    */
   private val singleGeoRadius: Reply[Option[GeoRadiusMember]] = {
     case (BULK, s) =>
       bulkRead(s).map(str => GeoRadiusMember(Some(Parsers.parseString(str))))
@@ -188,6 +223,11 @@ private [redis] trait Reply {
       }
   }
 
+  /**
+    * Entry point for GEORADIUS result analysis. The analysis is done in three steps.
+    *
+    * First step : we are expecting a MULTI structure and will iterate trivially on it.
+    */
   val geoRadiusMemberReply: Reply[Option[List[Option[GeoRadiusMember]]]] = {
     case (MULTI, str) =>
       Parsers.parseInt(str) match {
