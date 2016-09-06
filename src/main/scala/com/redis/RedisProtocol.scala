@@ -3,6 +3,11 @@ package com.redis
 import serialization.Parse
 import Parse.{Implicits => Parsers}
 
+case class GeoRadiusMember(member: Option[String],
+                           hash: Option[Long] = None,
+                           dist: Option[String] = None,
+                           coords: Option[(String, String)] = None)
+
 private [redis] object Commands {
 
   // Response codes from the Redis server
@@ -134,9 +139,65 @@ private [redis] trait Reply {
     case line =>
       (pf orElse errReply) apply ((line(0).toChar,line.slice(1,line.length)))
   }
+
+  type FoldReply = PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]]
+
+
+  def errFoldReply[A]: FoldReply = {
+    case (ERR, s, _) => throw new Exception(Parsers.parseString(s))
+    case x => throw new Exception("Protocol error: Got " + x + " as initial reply byte")
+  }
+
+  def foldReceive[A](pf: FoldReply, a: Option[GeoRadiusMember]): Option[GeoRadiusMember] = readLine match {
+    case null =>
+      throw new RedisConnectionException("Connection dropped ..")
+    case line =>
+      (pf orElse errFoldReply) apply ((line(0).toChar,line.slice(1,line.length),a))
+  }
+
+  private val complexGeoRadius: PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]] = {
+    case (BULK, s, a) =>
+      val retrieved = bulkRead(s)
+      retrieved.map{ ret =>
+        a.fold(GeoRadiusMember(Some(Parsers.parseString(ret)))){ some =>
+          some.member.fold(GeoRadiusMember(Some(Parsers.parseString(ret)))){_ => some.copy(dist = Some(Parsers.parseString(ret)))}
+        }
+      }
+    case (INT, s, opt) => opt.map( a => a.copy(hash = Some(Parsers.parseLong(s))))
+    case (MULTI, s, a) =>
+      Parsers.parseInt(s) match {
+        case 2 =>
+          val lon: Option[String] = receive(bulkReply).map(Parsers.parseString)
+          val lat: Option[String] = receive(bulkReply).map(Parsers.parseString)
+          a.map(_.copy(coords = Some(lon.getOrElse(""), lat.getOrElse(""))))
+        case _ => None
+      }
+  }
+
+  private val singleGeoRadius: Reply[Option[GeoRadiusMember]] = {
+    case (BULK, s) =>
+      bulkRead(s).map(str => GeoRadiusMember(Some(Parsers.parseString(str))))
+    case (MULTI, str) =>
+      Parsers.parseInt(str) match {
+        case -1 => None
+        case n =>
+          val out: Option[GeoRadiusMember] = List.range(0, n).foldLeft[Option[GeoRadiusMember]](None){ (in, n) =>
+            foldReceive(complexGeoRadius, in)
+          }
+          out
+      }
+  }
+
+  val geoRadiusMemberReply: Reply[Option[List[Option[GeoRadiusMember]]]] = {
+    case (MULTI, str) =>
+      Parsers.parseInt(str) match {
+        case -1 => None
+        case n => Some(List.fill(n)(receive(singleGeoRadius)))
+      }
+  }
 }
 
-private [redis] trait R extends Reply with GeoReceive {
+private [redis] trait R extends Reply {
   def asString: Option[String] = receive(singleLineReply) map Parsers.parseString
 
   def asBulk[T](implicit parse: Parse[T]): Option[T] =  receive(bulkReply) map parse
