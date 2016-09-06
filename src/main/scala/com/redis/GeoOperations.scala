@@ -18,8 +18,17 @@ trait GeoOperations { self: Redis =>
     send("GEOPOS", key :: members.toList)(receive(multiBulkNested).map(_.map(_.map(_.map(_.map(parse))))))
   }
 
-  def geohash[A](key: Any, members: Iterable[Any])(implicit format: Format, parse: Parse[A]): Option[List[A]]= {
-    send("GEOHASH", key :: members.toList)(asList.map(_.flatten))
+  /**
+    * Get the geohash for each member in the key geo index.
+    * @param key
+    * @param members
+    * @param format
+    * @param parse
+    * @tparam A
+    * @return The geohash of each queried member.
+    */
+  def geohash[A](key: Any, members: Iterable[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]]= {
+    send("GEOHASH", key :: members.toList)(asList[A])
   }
 
   def geodist(key: Any, m1: Any, m2: Any, unit: Option[Any]): Option[String] = {

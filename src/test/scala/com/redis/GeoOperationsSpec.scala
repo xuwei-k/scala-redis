@@ -66,7 +66,12 @@ class GeoOperationsSpec extends FunSpec
     it("should expose correctly the stored hash"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
       val out = r.geohash[String]("Sicily", List("Palermo",  "Catania"))
-      out should be(Some(List("sqc8b49rny0", "sqdtr74hyu0")))
+      out should be(Some(List(Some("sqc8b49rny0"), Some("sqdtr74hyu0"))))
+    }
+    it("should retrieve nil for absent members"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.geohash[String]("Sicily", List("unknown"))
+      out should be(Some(List(None)))
     }
   }
 
