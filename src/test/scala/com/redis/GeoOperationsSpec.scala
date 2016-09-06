@@ -109,5 +109,15 @@ class GeoOperationsSpec extends FunSpec
           Some(GeoRadiusMember(Some("Catania"),None,None,None))))
       )
     }
+    it("should correctly retrieve members in the radius with their hash, dist and coords"){
+      r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
+      val out = r.georadius("Sicily", "15", "37", "200", "km", true, true, true, None, false, None, None)
+      out should equal(
+        Some(List(
+          Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("190.4424"),Some(("13.36138933897018433","38.11555639549629859")))),
+          Some(GeoRadiusMember(Some("Catania"),Some(3479447370796909L),Some("56.4413"), Some(("15.08726745843887329","37.50266842333162032"))))
+        ))
+      )
+    }
   }
 }

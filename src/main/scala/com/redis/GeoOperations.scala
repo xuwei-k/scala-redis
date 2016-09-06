@@ -47,9 +47,17 @@ trait GeoReceive { self: Reply =>
         }
       }
     case (INT, s, opt) => opt.map( a => a.copy(hash = Some(Parsers.parseLong(s))))
+    case (MULTI, s, a) =>
+      Parsers.parseInt(s) match {
+        case 2 =>
+          val lon: Option[String] = receive(bulkReply).map(Parsers.parseString)
+          val lat: Option[String] = receive(bulkReply).map(Parsers.parseString)
+          a.map(_.copy(coords = Some(lon.getOrElse(""), lat.getOrElse(""))))
+        case _ => None
+      }
   }
 
-  def phaseTwo[A]: Reply[Option[GeoRadiusMember]] = {
+  val phaseTwo: Reply[Option[GeoRadiusMember]] = {
     case (BULK, s) =>
       Parsers.parseInt(s) match {
         case -1 => None
