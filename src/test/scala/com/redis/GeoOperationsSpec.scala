@@ -93,7 +93,7 @@ class GeoOperationsSpec extends FunSpec
   describe("georadius"){
     it("should correctly retrieve members in the radius"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
-      val out = r.georadius("Sicily", "15", "37", "200", "km", true, false, false, None, None, None, None)
+      val out = r.georadius("Sicily", "15", "37", "200", "km", false, true, true, None, false, None, None)
       out should equal(
         Some(List(
           Some(GeoRadiusMember(Some("Palermo"),Some(3479099956230698L),Some("190.4424"),None)),

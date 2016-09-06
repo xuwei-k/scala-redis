@@ -111,11 +111,19 @@ trait GeoOperations { self: Redis =>
                 withCoord: Boolean,
                 withDist: Boolean,
                 withHash: Boolean,
-                count: Option[Any],
-                order: Option[Any],
+                count: Option[Int],
+                desc: Boolean,
                 store: Option[Any],
-                storeDist: Option[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[GeoRadiusMember]]] ={
-    send("GEORADIUS", List(key, longitude, latitude, radius, unit) ++ List("WITHDIST", "WITHHASH"))(receive(geoRadiusMemberReply))
+                storeDist: Option[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[GeoRadiusMember]]] = {
+    val radArgs = List( if (withCoord) List("WITHCOORD") else Nil
+        , if (withDist) List("WITHDIST") else Nil
+        , if (withHash) List("WITHHASH") else Nil
+        , if (desc) List("DESC") else Nil
+        , count.fold[List[Any]](Nil)(b => List("COUNT", b))
+        , store.fold[List[Any]](Nil)(b => List("STORE", b))
+        , storeDist.fold[List[Any]](Nil)(b => List("STOREDIST", b))
+      ).flatMap(x=>x)
+    send("GEORADIUS", List(key, longitude, latitude, radius, unit) ++ radArgs)(receive(geoRadiusMemberReply))
   }
 
 }
