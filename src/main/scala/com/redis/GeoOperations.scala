@@ -24,7 +24,6 @@ trait GeoReceive { self: Reply =>
     case null =>
       throw new RedisConnectionException("Connection dropped ..")
     case line =>
-      println("Just Received " + line(0).toChar)
       (pf orElse errFoldReply) apply ((line(0).toChar,line.slice(1,line.length),a))
   }
 
