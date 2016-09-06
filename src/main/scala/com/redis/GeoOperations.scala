@@ -12,9 +12,6 @@ trait GeoReceive { self: Reply =>
   import Parse.{Implicits => Parsers}
   import Parse.Implicits._
 
-
-//  case class GeoRadiusMember(member: Option[String], complexResponse: Option[ComplexGeoRadiusMember])
-
   type FoldReply = PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]]
 
 
