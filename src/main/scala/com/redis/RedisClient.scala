@@ -54,6 +54,7 @@ trait Redis extends IO with Protocol {
 }
 
 trait RedisCommand extends Redis with Operations
+  with GeoOperations
   with NodeOperations 
   with StringOperations
   with ListOperations

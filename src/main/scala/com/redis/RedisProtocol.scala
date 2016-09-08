@@ -3,6 +3,11 @@ package com.redis
 import serialization.Parse
 import Parse.{Implicits => Parsers}
 
+case class GeoRadiusMember(member: Option[String],
+                           hash: Option[Long] = None,
+                           dist: Option[String] = None,
+                           coords: Option[(String, String)] = None)
+
 private [redis] object Commands {
 
   // Response codes from the Redis server
@@ -40,6 +45,7 @@ private [redis] trait Reply {
   type Reply[T] = PartialFunction[(Char, Array[Byte]), T]
   type SingleReply = Reply[Option[Array[Byte]]]
   type MultiReply = Reply[Option[List[Option[Array[Byte]]]]]
+  type MultiNestedReply = Reply[Option[List[Option[List[Option[Array[Byte]]]]]]]
   type PairReply = Reply[Option[(Option[Array[Byte]], Option[List[Option[Array[Byte]]]])]]
 
   def readLine: Array[Byte]
@@ -60,16 +66,18 @@ private [redis] trait Reply {
     case (INT, s) => Some(s)
   }
 
+  def bulkRead(s: Array[Byte]) =
+    Parsers.parseInt(s) match {
+      case -1 => None
+      case l =>
+        val str = readCounted(l)
+        val ignore = readLine // trailing newline
+        Some(str)
+    }
+
   val bulkReply: SingleReply = {
-    case (BULK, s) => 
-      Parsers.parseInt(s) match {
-        case -1 => None
-        case l => {
-          val str = readCounted(l)
-          val ignore = readLine // trailing newline
-          Some(str)
-        }
-      }
+    case (BULK, s) =>
+      bulkRead(s)
   }
 
   val multiBulkReply: MultiReply = {
@@ -77,6 +85,14 @@ private [redis] trait Reply {
       Parsers.parseInt(str) match {
         case -1 => None
         case n => Some(List.fill(n)(receive(bulkReply orElse singleLineReply)))
+      }
+  }
+
+  val multiBulkNested: MultiNestedReply = {
+    case (MULTI, str) =>
+      Parsers.parseInt(str) match {
+        case -1 => None
+        case n => Some(List.fill(n)(receive(multiBulkReply)))
       }
   }
 
@@ -122,6 +138,102 @@ private [redis] trait Reply {
       throw new RedisConnectionException("Connection dropped ..")
     case line =>
       (pf orElse errReply) apply ((line(0).toChar,line.slice(1,line.length)))
+  }
+
+  /**
+    * The following partial functions intend to manage the response from the GEORADIUS and GEORADIUSBYMEMBER commands.
+    * The code is not as generic as the previous ones as the exposed types are quite complex and really specific
+    * to these two commands
+    */
+  type FoldReply = PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]]
+
+  /**
+    * dedicated errorReply working with foldReceive.
+    * @tparam A
+    * @return
+    */
+  private def errFoldReply[A]: FoldReply = {
+    case (ERR, s, _) => throw new Exception(Parsers.parseString(s))
+    case x => throw new Exception("Protocol error: Got " + x + " as initial reply byte")
+  }
+
+  /**
+    * dedicated receive used in our fold strategy
+    * @param pf
+    * @param a
+    * @tparam A
+    * @return
+    */
+  private def foldReceive[A](pf: FoldReply, a: Option[GeoRadiusMember]): Option[GeoRadiusMember] = readLine match {
+    case null =>
+      throw new RedisConnectionException("Connection dropped ..")
+    case line =>
+      (pf orElse errFoldReply) apply ((line(0).toChar,line.slice(1,line.length),a))
+  }
+
+  /**
+    * Final step : we feed our accumulator with the data we find.
+    *
+    *  - First BULK : It is the member name
+    *  - Second BULK : It is the distance to the ref point
+    *  - INT : The member hash
+    *  - MULTI : The member coordinates. Should contain exactly two members.
+    */
+  private val complexGeoRadius: PartialFunction[(Char, Array[Byte], Option[GeoRadiusMember]), Option[GeoRadiusMember]] = {
+    case (BULK, s, a) =>
+      val retrieved = bulkRead(s)
+      retrieved.map{ ret =>
+        a.fold(GeoRadiusMember(Some(Parsers.parseString(ret)))){ some =>
+          some.member.fold(GeoRadiusMember(Some(Parsers.parseString(ret)))){_ => some.copy(dist = Some(Parsers.parseString(ret)))}
+        }
+      }
+    case (INT, s, opt) => opt.map( a => a.copy(hash = Some(Parsers.parseLong(s))))
+    case (MULTI, s, a) =>
+      Parsers.parseInt(s) match {
+        case 2 =>
+          val lon: Option[String] = receive(bulkReply).map(Parsers.parseString)
+          val lat: Option[String] = receive(bulkReply).map(Parsers.parseString)
+          a.map(_.copy(coords = Some(lon.getOrElse(""), lat.getOrElse(""))))
+        case _ => None
+      }
+  }
+
+  /**
+    * Second step : We must manage two distinct cases:
+    *
+    *  - The user performed a basic search, he will only receive strings listing the members found in the radius. A
+    *    BULK is exposed in this case.
+    *  - The user performed a complex search (with radius, coordinates or distance in the result). A more complex data structure
+    *    is exposed, as a MULTI containing a BULK, a possible BULK, a possible INT and a possible MULTI. We use a dedicated
+    *    strategy for this containing MULTI that will be able to manage all the possible cases. Rather than using a List.fill here,
+    *    we use a range and fold on it in order to be able to use an accumulator. This way, the accumulator is fed with each
+    *    member of the multi and changed accordingly
+    */
+  private val singleGeoRadius: Reply[Option[GeoRadiusMember]] = {
+    case (BULK, s) =>
+      bulkRead(s).map(str => GeoRadiusMember(Some(Parsers.parseString(str))))
+    case (MULTI, str) =>
+      Parsers.parseInt(str) match {
+        case -1 => None
+        case n =>
+          val out: Option[GeoRadiusMember] = List.range(0, n).foldLeft[Option[GeoRadiusMember]](None){ (in, n) =>
+            foldReceive(complexGeoRadius, in)
+          }
+          out
+      }
+  }
+
+  /**
+    * Entry point for GEORADIUS result analysis. The analysis is done in three steps.
+    *
+    * First step : we are expecting a MULTI structure and will iterate trivially on it.
+    */
+  val geoRadiusMemberReply: Reply[Option[List[Option[GeoRadiusMember]]]] = {
+    case (MULTI, str) =>
+      Parsers.parseInt(str) match {
+        case -1 => None
+        case n => Some(List.fill(n)(receive(singleGeoRadius)))
+      }
   }
 }
 
