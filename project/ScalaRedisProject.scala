@@ -10,7 +10,7 @@ object ScalaRedisProject extends Build
     organization := "net.debasishg",
     version := "3.2",
     scalaVersion := "2.11.8",
-    crossScalaVersions := Seq("2.11.8", "2.10.6"),
+    crossScalaVersions := Seq("2.12.0-RC1", "2.11.8", "2.10.6"),
 
     scalacOptions in Compile ++= Seq( "-unchecked", "-feature", "-language:postfixOps", "-deprecation" ),
 
@@ -24,10 +24,15 @@ object ScalaRedisProject extends Build
       "org.slf4j"         %  "slf4j-api"               % "1.7.2",
       "org.slf4j"         %  "slf4j-log4j12"           % "1.7.2"      % "provided",
       "log4j"             %  "log4j"                   % "1.2.16"     % "provided",
-      "com.typesafe.akka" %% "akka-actor"              % "2.3.6",
       "junit"             %  "junit"                   % "4.8.1"      % "test",
-      "org.scalatest"     %%  "scalatest"              % "2.1.3" % "test"),
+      "org.scalatest"     %%  "scalatest"              % "3.0.0" % "test"),
 
+    libraryDependencies += {
+      if(scalaVersion.value.startsWith("2.12"))
+        "com.typesafe.akka" %% "akka-actor" % "2.4.10"
+      else
+        "com.typesafe.akka" %% "akka-actor" % "2.3.6"
+    },
     parallelExecution in Test := false,
     publishTo <<= version { (v: String) => 
       val nexus = "https://oss.sonatype.org/" 
