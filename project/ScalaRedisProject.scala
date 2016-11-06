@@ -10,7 +10,7 @@ object ScalaRedisProject extends Build
     organization := "net.debasishg",
     version := "3.2",
     scalaVersion := "2.11.8",
-    crossScalaVersions := Seq("2.12.0-RC1", "2.11.8", "2.10.6"),
+    crossScalaVersions := Seq("2.12.0", "2.11.8", "2.10.6"),
 
     scalacOptions in Compile ++= Seq( "-unchecked", "-feature", "-language:postfixOps", "-deprecation" ),
 
@@ -29,7 +29,7 @@ object ScalaRedisProject extends Build
 
     libraryDependencies += {
       if(scalaVersion.value.startsWith("2.12"))
-        "com.typesafe.akka" %% "akka-actor" % "2.4.10"
+        "com.typesafe.akka" %% "akka-actor" % "2.4.12"
       else
         "com.typesafe.akka" %% "akka-actor" % "2.3.6"
     },
