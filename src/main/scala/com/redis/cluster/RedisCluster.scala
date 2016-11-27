@@ -345,7 +345,7 @@ abstract class RedisCluster(hosts: ClusterNode*) extends RedisCommand {
   override def hget[A](key: Any, field: Any)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.hget[A](key, field))
   override def hmset(key: Any, map: Iterable[Product2[Any, Any]])(implicit format: Format) = processForKey(key)(_.hmset(key, map))
   override def hmget[K,V](key: Any, fields: K*)(implicit format: Format, parseV: Parse[V]) = processForKey(key)(_.hmget[K,V](key, fields:_*))
-  override def hincrby(key: Any, field: Any, value: Int)(implicit format: Format) = processForKey(key)(_.hincrby(key, field, value))
+  override def hincrby(key: Any, field: Any, value: Long)(implicit format: Format) = processForKey(key)(_.hincrby(key, field, value))
   override def hexists(key: Any, field: Any)(implicit format: Format) = processForKey(key)(_.hexists(key, field))
   override def hdel(key: Any, field: Any, fields: Any*)(implicit format: Format): Option[Long] = processForKey(key)(_.hdel(key, field, fields:_*))
   override def hlen(key: Any)(implicit format: Format) = processForKey(key)(_.hlen(key))
