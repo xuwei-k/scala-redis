@@ -58,7 +58,7 @@ trait StringOperations { self: Redis =>
 
   // INCR (key, increment)
   // increments the specified key by increment
-  def incrby(key: Any, increment: Int)(implicit format: Format): Option[Long] =
+  def incrby(key: Any, increment: Long)(implicit format: Format): Option[Long] =
     send("INCRBY", List(key, increment))(asLong)
 
   def incrbyfloat(key: Any, increment: Float)(implicit format: Format): Option[Float] =
@@ -71,7 +71,7 @@ trait StringOperations { self: Redis =>
 
   // DECR (key, increment)
   // decrements the specified key by increment
-  def decrby(key: Any, increment: Int)(implicit format: Format): Option[Long] =
+  def decrby(key: Any, increment: Long)(implicit format: Format): Option[Long] =
     send("DECRBY", List(key, increment))(asLong)
 
   // MGET (key, key, key, ...)

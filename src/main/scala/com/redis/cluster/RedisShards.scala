@@ -122,9 +122,9 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   override def setnx(key: Any, value: Any)(implicit format: Format) = processForKey(key)(_.setnx(key, value))
   override def setex(key: Any, expiry: Long, value: Any)(implicit format: Format) = processForKey(key)(_.setex(key, expiry, value))
   override def incr(key: Any)(implicit format: Format) = processForKey(key)(_.incr(key))
-  override def incrby(key: Any, increment: Int)(implicit format: Format) = processForKey(key)(_.incrby(key, increment))
+  override def incrby(key: Any, increment: Long)(implicit format: Format) = processForKey(key)(_.incrby(key, increment))
   override def decr(key: Any)(implicit format: Format) = processForKey(key)(_.decr(key))
-  override def decrby(key: Any, increment: Int)(implicit format: Format) = processForKey(key)(_.decrby(key, increment))
+  override def decrby(key: Any, increment: Long)(implicit format: Format) = processForKey(key)(_.decrby(key, increment))
 
   override def mget[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] = {
     val keylist = (key :: keys.toList)
