@@ -47,6 +47,23 @@ class OperationsSpec extends FunSpec
     }
   }
 
+  describe("time") {
+    it("should fetch a list of a timestamp and the number of microseconds elapsed in current second.") {
+      r.time match {
+        case Some(s: List[Option[String]]) => s.size should equal(2)
+        case None => fail("should have 2 elements")
+      }
+    }
+
+    it("should give a unix timestamp in seconds that is larger than the elapsed time in microseconds") {
+      r.time match {
+        case Some(Some(timestamp) :: Some(elaspedtime) :: Nil) =>
+          (timestamp.toLong * 1000000L) should be > elaspedtime.toLong
+        case _ => fail("should have a unix timestamp and an elasped time")
+      }
+    }
+  }
+
   describe("randomkey") {
     it("should give") {
       r.set("anshin-1", "debasish")

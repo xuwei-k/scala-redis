@@ -49,6 +49,12 @@ trait Operations { self: Redis =>
   def keys[A](pattern: Any = "*")(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] =
     send("KEYS", List(pattern))(asList)
 
+  // TIME
+  // returns the current server time as a two items lists:
+  // a Unix timestamp and the amount of microseconds already elapsed in the current second.
+  def time[A](implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] =
+    send("TIME")(asList)
+
   // RANDKEY
   // return a randomly selected key from the currently selected DB.
   @deprecated("use randomkey", "2.8") def randkey[A](implicit parse: Parse[A]): Option[A] =
