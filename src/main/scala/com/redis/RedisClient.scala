@@ -13,6 +13,14 @@ object RedisClient {
   case object SUM extends Aggregate
   case object MIN extends Aggregate
   case object MAX extends Aggregate
+
+  private def extractDatabaseNumber(connectionUri: java.net.URI): Int = {
+    Option(connectionUri.getPath).map(path =>
+      if (path.isEmpty) 0
+      else Integer.parseInt(path.tail)
+    )
+      .getOrElse(0)
+  }
 }
 
 trait Redis extends IO with Protocol {
@@ -102,13 +110,14 @@ class RedisClient(override val host: String, override val port: Int,
   def this(connectionUri: java.net.URI) = this(
     host = connectionUri.getHost,
     port = connectionUri.getPort,
+    database = RedisClient.extractDatabaseNumber(connectionUri),
     secret = Option(connectionUri.getUserInfo)
       .flatMap(_.split(':') match {
         case Array(_, password, _*) ⇒ Some(password)
         case _ ⇒ None
       })
   )
-  override def toString = host + ":" + String.valueOf(port)
+  override def toString = host + ":" + String.valueOf(port) + "/" + database
 
   def pipeline(f: PipelineClient => Any): Option[List[Any]] = {
     send("MULTI")(asString) // flush reply stream
