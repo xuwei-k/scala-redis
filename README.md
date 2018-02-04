@@ -230,6 +230,10 @@ def scatterGatherFirstWithList(opsPerClient: Int)(implicit clients: RedisClientP
 }
 ```
 
+## Using Pub/Sub
+
+See an example implementation using Akka at https://github.com/debasishg/akka-redis-pubsub.
+
 ## License
 
 This software is licensed under the Apache 2 license, quoted below.
