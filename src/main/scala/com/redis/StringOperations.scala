@@ -81,12 +81,12 @@ trait StringOperations { self: Redis =>
 
   // MSET (key1 value1 key2 value2 ..)
   // set the respective key value pairs. Overwrite value if key exists
-  def mset(kvs: (Any, Any)*)(implicit format: Format) =
+  def mset(kvs: (Any, Any)*)(implicit format: Format): Boolean =
     send("MSET", kvs.foldRight(List[Any]()){ case ((k,v),l) => k :: v :: l })(asBoolean)
 
   // MSETNX (key1 value1 key2 value2 ..)
   // set the respective key value pairs. Noop if any key exists
-  def msetnx(kvs: (Any, Any)*)(implicit format: Format) =
+  def msetnx(kvs: (Any, Any)*)(implicit format: Format): Boolean =
     send("MSETNX", kvs.foldRight(List[Any]()){ case ((k,v),l) => k :: v :: l })(asBoolean)
 
   // SETRANGE key offset value

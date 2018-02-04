@@ -49,7 +49,7 @@ trait Redis extends IO with Protocol {
       else throw e
   }
 
-  def cmd(args: Seq[Array[Byte]]) = Commands.multiBulk(args)
+  def cmd(args: Seq[Array[Byte]]): Array[Byte] = Commands.multiBulk(args)
 
   protected def flattenPairs(in: Iterable[Product2[Any, Any]]): List[Any] =
     in.iterator.flatMap(x => Iterator(x._1, x._2)).toList
@@ -81,19 +81,19 @@ trait RedisCommand extends Redis with Operations
       secret.foreach {s => 
         auth(s)
       }
-      selectDatabase
+      selectDatabase()
       true
     } else {
       false
     }
   }
   
-  private def selectDatabase {
+  private def selectDatabase() {
     if (database != 0)
       select(database)
   }
 
-  private def authenticate {
+  private def authenticate() {
     secret.foreach(auth _)
   }
   
@@ -117,7 +117,7 @@ class RedisClient(override val host: String, override val port: Int,
         case _ ⇒ None
       })
   )
-  override def toString = host + ":" + String.valueOf(port) + "/" + database
+  override def toString: String = host + ":" + String.valueOf(port) + "/" + database
 
   def pipeline(f: PipelineClient => Any): Option[List[Any]] = {
     send("MULTI")(asString) // flush reply stream

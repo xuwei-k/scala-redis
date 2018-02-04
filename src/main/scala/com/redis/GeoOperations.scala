@@ -86,7 +86,7 @@ trait GeoOperations { self: Redis =>
         , count.fold[List[Any]](Nil)(b => List("COUNT", b))
         , store.fold[List[Any]](Nil)(b => List("STORE", b))
         , storeDist.fold[List[Any]](Nil)(b => List("STOREDIST", b))
-      ).flatMap(x=>x)
+      ).flatten
     send("GEORADIUS", List(key, longitude, latitude, radius, unit) ++ radArgs)(receive(geoRadiusMemberReply))
   }
 
@@ -123,7 +123,7 @@ trait GeoOperations { self: Redis =>
       , count.fold[List[Any]](Nil)(b => List("COUNT", b))
       , store.fold[List[Any]](Nil)(b => List("STORE", b))
       , storeDist.fold[List[Any]](Nil)(b => List("STOREDIST", b))
-    ).flatMap(x=>x)
+    ).flatten
     send("GEORADIUSBYMEMBER", List(key, member, radius, unit) ++ radArgs)(receive(geoRadiusMemberReply))
   }
 

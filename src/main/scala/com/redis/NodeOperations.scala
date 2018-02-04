@@ -41,14 +41,13 @@ trait NodeOperations { self: Redis =>
   // SLAVEOF
   // The SLAVEOF command can change the replication settings of a slave on the fly.
   def slaveof(options: Any): Boolean = options match {
-    case (h: String, p: Int) => {
+    case (h: String, p: Int) =>
       send("SLAVEOF", List(h, p))(asBoolean)
-    }
-    case _ => setAsMaster
+    case _ => setAsMaster()
   }
   
   @deprecated("use slaveof", "1.2.0") def slaveOf(options: Any): Boolean = slaveof(options)
 
-  private def setAsMaster: Boolean =
+  private def setAsMaster(): Boolean =
     send("SLAVEOF", List("NO", "ONE"))(asBoolean)
 }

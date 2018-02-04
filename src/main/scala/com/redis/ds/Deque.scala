@@ -48,15 +48,15 @@ abstract class RedisDeque[A](val blocking: Boolean = false, val timeoutInSecs: I
 
   def peekLast: Option[A] = lrange[A](key, -1, -1).map(_.head.get) 
 
-  def poll =
-    if (blocking == true) {
+  def poll: Option[A] =
+    if (blocking) {
       blpop[String, A](timeoutInSecs, key).map(_._2)
     } else lpop[A](key)
 
   def pollFirst: Option[A] = poll
 
   def pollLast: Option[A] =
-    if (blocking == true) {
+    if (blocking) {
       brpop[String, A](timeoutInSecs, key).map(_._2)
     } else rpop[A](key) 
 

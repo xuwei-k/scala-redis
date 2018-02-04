@@ -26,8 +26,8 @@ trait Operations { self: Redis =>
       , (if (desc) List("DESC") else Nil)
       , (if (alpha) List("ALPHA") else Nil)
       , by.map(b => List("BY", b)).getOrElse(Nil)
-      , get.map(g => List("GET", g)).flatMap(x=>x)
-      ).flatMap(x=>x)
+      , get.flatMap(g => List("GET", g))
+      ).flatten
   }
 
   // SORT with STORE
@@ -128,12 +128,11 @@ trait Operations { self: Redis =>
   // SELECT (index)
   // selects the DB to connect, defaults to 0 (zero).
   def select(index: Int): Boolean =
-    send("SELECT", List(index))(asBoolean match {
-      case true => {
-        db = index
-        true
-      }
-      case _ => false
+    send("SELECT", List(index))(if (asBoolean) {
+      db = index
+      true
+    } else {
+      false
     })
     
   

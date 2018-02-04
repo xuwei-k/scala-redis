@@ -20,7 +20,7 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   private var clients = hosts.map { h => (h.nodename, new IdentifiableRedisClientPool(h)) } toMap
 
   // the hash ring will instantiate with the nodes up and added
-  val hr = HashRing[String](hosts.map(_.nodename), POINTS_PER_SERVER)
+  val hr: HashRing[String] = HashRing[String](hosts.map(_.nodename), POINTS_PER_SERVER)
 
   // get node for the key
   def nodeForKey(key: Any)(implicit format: Format): RedisClientPool = {
@@ -34,13 +34,13 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   }
 
   // add a server
-  def addServer(server: ClusterNode) = {
+  def addServer(server: ClusterNode): Unit = {
     clients = clients + (server.nodename -> new IdentifiableRedisClientPool(server))
     hr addNode server.nodename
   }
 
   // replace a server
-  def replaceServer(server: ClusterNode) = {
+  def replaceServer(server: ClusterNode): Unit = {
     if (clients.contains(server.nodename)) {
       clients(server.nodename).close
       clients = clients - server.nodename
@@ -67,14 +67,14 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
    * Operations
    */
   override def keys[A](pattern: Any = "*")(implicit format: Format, parse: Parse[A]) =
-    Some(clients.values.toList.map(_.withClient(_.keys[A](pattern))).flatten.flatten)
+    Some(clients.values.toList.flatMap(_.withClient(_.keys[A](pattern))).flatten)
 
   def onAllConns[T](body: RedisClient => T) = 
     clients.values.map(p => p.withClient { client => body(client) }) // .forall(_ == true)
 
-  override def flushdb = onAllConns(_.flushdb) forall(_ == true)
-  override def flushall = onAllConns(_.flushall) forall(_ == true)
-  override def quit = onAllConns(_.quit) forall(_ == true)
+  override def flushdb: Boolean = onAllConns(_.flushdb) forall(_ == true)
+  override def flushall: Boolean = onAllConns(_.flushall) forall(_ == true)
+  override def quit: Boolean = onAllConns(_.quit) forall(_ == true)
   def close = clients.values.map(_.close)
 
   override def rename(oldkey: Any, newkey: Any)(implicit format: Format): Boolean = processForKey(oldkey)(_.rename(oldkey, newkey))
@@ -84,14 +84,18 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   override def exists(key: Any)(implicit format: Format): Boolean = processForKey(key)(_.exists(key))
   override def del(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
     Some((key :: keys.toList).groupBy(nodeForKey).foldLeft(0l) { case (t,(n,ks)) => n.withClient{ client => client.del(ks.head,ks.tail:_*).map(t+).getOrElse(t)} })
-  override def getType(key: Any)(implicit format: Format) = processForKey(key)(_.getType(key))
-  override def expire(key: Any, expiry: Int)(implicit format: Format) = processForKey(key)(_.expire(key, expiry))
-  override def expireat(key: Any, expiry: Long)(implicit format: Format) = processForKey(key)(_.expireat(key, expiry))
-  override def pexpire(key: Any, expiry: Int)(implicit format: Format) = processForKey(key)(_.pexpire(key, expiry))
-  override def pexpireat(key: Any, expiry: Long)(implicit format: Format) = processForKey(key)(_.pexpireat(key, expiry))
+  override def getType(key: Any)(implicit format: Format): Option[String] = processForKey(key)(_.getType(key))
+  override def expire(key: Any, expiry: Int)(implicit format: Format): Boolean =
+    processForKey(key)(_.expire(key, expiry))
+  override def expireat(key: Any, expiry: Long)(implicit format: Format): Boolean =
+    processForKey(key)(_.expireat(key, expiry))
+  override def pexpire(key: Any, expiry: Int)(implicit format: Format): Boolean =
+    processForKey(key)(_.pexpire(key, expiry))
+  override def pexpireat(key: Any, expiry: Long)(implicit format: Format): Boolean =
+    processForKey(key)(_.pexpireat(key, expiry))
   override def select(index: Int) = throw new UnsupportedOperationException("not supported on a cluster")
-  override def ttl(key: Any)(implicit format: Format) = processForKey(key)(_.ttl(key))
-  override def pttl(key: Any)(implicit format: Format) = processForKey(key)(_.pttl(key))
+  override def ttl(key: Any)(implicit format: Format): Option[Long] = processForKey(key)(_.ttl(key))
+  override def pttl(key: Any)(implicit format: Format): Option[Long] = processForKey(key)(_.pttl(key))
   override def randomkey[A](implicit parse: Parse[A]) = throw new UnsupportedOperationException("not supported on a cluster")
   override def randkey[A](implicit parse: Parse[A]) = throw new UnsupportedOperationException("not supported on a cluster")
 
@@ -99,10 +103,10 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   /**
    * NodeOperations
    */
-  override def save = onAllConns(_.save) forall(_ == true)
-  override def bgsave = onAllConns(_.bgsave) forall(_ == true)
-  override def shutdown = onAllConns(_.shutdown) forall(_ == true)
-  override def bgrewriteaof = onAllConns(_.bgrewriteaof) forall(_ == true)
+  override def save: Boolean = onAllConns(_.save) forall(_ == true)
+  override def bgsave: Boolean = onAllConns(_.bgsave) forall(_ == true)
+  override def shutdown: Boolean = onAllConns(_.shutdown) forall(_ == true)
+  override def bgrewriteaof: Boolean = onAllConns(_.bgrewriteaof) forall(_ == true)
 
   override def lastsave = throw new UnsupportedOperationException("not supported on a cluster")
   override def monitor = throw new UnsupportedOperationException("not supported on a cluster")
@@ -182,37 +186,44 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   /**
    * SetOperations
    */
-  override def sadd(key: Any, value: Any, values: Any*)(implicit format: Format): Option[Long] = processForKey(key)(_.sadd(key, value, values:_*))
-  override def srem(key: Any, value: Any, values: Any*)(implicit format: Format): Option[Long] = processForKey(key)(_.srem(key, value, values:_*))
-  override def spop[A](key: Any)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.spop[A](key))
+  override def sadd(key: Any, value: Any, values: Any*)(implicit format: Format): Option[Long] =
+    processForKey(key)(_.sadd(key, value, values:_*))
+  override def srem(key: Any, value: Any, values: Any*)(implicit format: Format): Option[Long] =
+    processForKey(key)(_.srem(key, value, values:_*))
+  override def spop[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    processForKey(key)(_.spop[A](key))
 
-  override def smove(sourceKey: Any, destKey: Any, value: Any)(implicit format: Format) = 
+  override def smove(sourceKey: Any, destKey: Any, value: Any)(implicit format: Format): Option[Long] =
     inSameNode(sourceKey, destKey) {n => n.smove(sourceKey, destKey, value)}
 
-  override def scard(key: Any)(implicit format: Format) = processForKey(key)(_.scard(key))
-  override def sismember(key: Any, value: Any)(implicit format: Format) = processForKey(key)(_.sismember(key, value))
+  override def scard(key: Any)(implicit format: Format): Option[Long] = processForKey(key)(_.scard(key))
+  override def sismember(key: Any, value: Any)(implicit format: Format): Boolean =
+    processForKey(key)(_.sismember(key, value))
 
-  override def sinter[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]) = 
+  override def sinter[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
     inSameNode((key :: keys.toList): _*) {n => n.sinter[A](key, keys: _*)}
 
-  override def sinterstore(key: Any, keys: Any*)(implicit format: Format) = 
+  override def sinterstore(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
     inSameNode((key :: keys.toList): _*) {n => n.sinterstore(key, keys: _*)}
 
-  override def sunion[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]) = 
+  override def sunion[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
     inSameNode((key :: keys.toList): _*) {n => n.sunion[A](key, keys: _*)}
 
   override def sunionstore(key: Any, keys: Any*)(implicit format: Format) = 
     inSameNode((key :: keys.toList): _*) {n => n.sunionstore(key, keys: _*)}
 
-  override def sdiff[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]) = 
+  override def sdiff[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
     inSameNode((key :: keys.toList): _*) {n => n.sdiff[A](key, keys: _*)}
 
-  override def sdiffstore(key: Any, keys: Any*)(implicit format: Format) = 
+  override def sdiffstore(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
     inSameNode((key :: keys.toList): _*) {n => n.sdiffstore(key, keys: _*)}
 
-  override def smembers[A](key: Any)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.smembers(key))
-  override def srandmember[A](key: Any)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.srandmember(key))
-  override def srandmember[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]) = processForKey(key)(_.srandmember(key, count))
+  override def smembers[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
+    processForKey(key)(_.smembers(key))
+  override def srandmember[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
+    processForKey(key)(_.srandmember(key))
+  override def srandmember[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] =
+    processForKey(key)(_.srandmember(key, count))
 
 
   import com.redis.RedisClient._

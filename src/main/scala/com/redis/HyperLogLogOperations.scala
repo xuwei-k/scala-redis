@@ -15,6 +15,6 @@ trait HyperLogLogOperations { self: Redis =>
 
   // PFMERGE (>= 2.8.9)
   // Merge existing keys
-  def pfmerge(destination: Any, sources: Any*) =
+  def pfmerge(destination: Any, sources: Any*): Boolean =
     send("PFMERGE", List(destination) ::: sources.toList)(asBoolean)
 }
