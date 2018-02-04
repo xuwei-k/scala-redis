@@ -8,9 +8,9 @@ object ScalaRedisProject extends Build
 
   lazy val commonSettings: Seq[Setting[_]] = Seq(
     organization := "net.debasishg",
-    version := "3.4",
-    scalaVersion := "2.11.8",
-    crossScalaVersions := Seq("2.12.1", "2.11.8", "2.10.6"),
+    version := "3.5",
+    scalaVersion := "2.11.12",
+    crossScalaVersions := Seq("2.12.4", "2.11.12", "2.10.7"),
 
     scalacOptions in Compile ++= Seq( "-unchecked", "-feature", "-language:postfixOps", "-deprecation" ),
 
@@ -21,11 +21,11 @@ object ScalaRedisProject extends Build
     name := "RedisClient",
     libraryDependencies := Seq(
       "commons-pool"      %  "commons-pool"            % "1.6",
-      "org.slf4j"         %  "slf4j-api"               % "1.7.2",
-      "org.slf4j"         %  "slf4j-log4j12"           % "1.7.2"      % "provided",
-      "log4j"             %  "log4j"                   % "1.2.16"     % "provided",
-      "junit"             %  "junit"                   % "4.8.1"      % "test",
-      "org.scalatest"     %%  "scalatest"              % "3.0.0" % "test"),
+      "org.slf4j"         %  "slf4j-api"               % "1.7.25",
+      "org.slf4j"         %  "slf4j-log4j12"           % "1.7.25"     % "provided",
+      "log4j"             %  "log4j"                   % "1.2.17"     % "provided",
+      "junit"             %  "junit"                   % "4.12"       % "test",
+      "org.scalatest"     %%  "scalatest"              % "3.0.4"      % "test"),
 
     libraryDependencies += {
       if(scalaVersion.value.startsWith("2.12"))
