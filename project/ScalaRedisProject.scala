@@ -19,7 +19,7 @@ object ScalaRedisProject extends Build
 
   lazy val coreSettings = commonSettings ++ Seq(
     name := "RedisClient",
-    libraryDependencies := Seq(
+    libraryDependencies ++= Seq(
       "commons-pool"      %  "commons-pool"            % "1.6",
       "org.slf4j"         %  "slf4j-api"               % "1.7.25",
       "org.slf4j"         %  "slf4j-log4j12"           % "1.7.25"     % "provided",
@@ -27,14 +27,8 @@ object ScalaRedisProject extends Build
       "junit"             %  "junit"                   % "4.12"       % "test",
       "org.scalatest"     %%  "scalatest"              % "3.0.4"      % "test"),
 
-    libraryDependencies += {
-      if(scalaVersion.value.startsWith("2.12"))
-        "com.typesafe.akka" %% "akka-actor" % "2.4.12"
-      else
-        "com.typesafe.akka" %% "akka-actor" % "2.3.6"
-    },
     parallelExecution in Test := false,
-    publishTo <<= version { (v: String) => 
+    publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/" 
       if (v.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "content/repositories/snapshots")
       else Some("releases" at nexus + "service/local/staging/deploy/maven2") 
