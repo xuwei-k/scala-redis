@@ -17,7 +17,7 @@ case class HashRing[T](nodes: List[T], replicas: Int) {
   /*
    * Adds a node to the hash ring (including a number of replicas)
    */
-  def addNode(node: T) = {
+  def addNode(node: T): Unit = {
     cluster += node
     (1 to replicas).foreach {replica =>
       ring += (nodeHashFor(node, replica) -> node)
@@ -27,7 +27,7 @@ case class HashRing[T](nodes: List[T], replicas: Int) {
   def replaceNode(node: T): Option[T] = {
     var replacedNode: Option[T] = None
     for (i <- 0 until cluster.size){
-      if (cluster(i).toString().equals(node.toString)){
+      if (cluster(i).toString.equals(node.toString)) {
         replacedNode = Some(cluster(i))
         cluster(i) = node
       }

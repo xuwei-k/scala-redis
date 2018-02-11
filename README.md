@@ -30,7 +30,7 @@ Add to `Build.scala` or `build.sbt`
 
 ```scala
 libraryDependencies ++= Seq(
-    "net.debasishg" %% "redisclient" % "3.4"
+    "net.debasishg" %% "redisclient" % "3.5"
 )
 ```
 
@@ -229,6 +229,10 @@ def scatterGatherFirstWithList(opsPerClient: Int)(implicit clients: RedisClientP
   Await.result(firstSum, timeout).asInstanceOf[Int]
 }
 ```
+
+## Using Pub/Sub
+
+See an example implementation using Akka at https://github.com/debasishg/akka-redis-pubsub.
 
 ## License
 

@@ -5,7 +5,7 @@ object Format {
 
   implicit val default: Format = new Format(Map.empty)
 
-  def formatDouble(d: Double, inclusive: Boolean = true) =
+  def formatDouble(d: Double, inclusive: Boolean = true): String =
     (if (inclusive) ("") else ("(")) + {
       if (d.isInfinity) {
         if (d > 0.0) "+inf" else "-inf"
@@ -33,16 +33,16 @@ object Parse {
   def apply[T](f: (Array[Byte]) => T) = new Parse[T](f)
 
   object Implicits {
-    implicit val parseString = Parse[String](new String(_, "UTF-8"))
-    implicit val parseByteArray = Parse[Array[Byte]](x => x)
-    implicit val parseInt = Parse[Int](new String(_, "UTF-8").toInt)
-    implicit val parseLong = Parse[Long](new String(_, "UTF-8").toLong)
-    implicit val parseDouble = Parse[Double](new String(_, "UTF-8").toDouble)
+    implicit val parseString: Parse[String] = Parse[String](new String(_, "UTF-8"))
+    implicit val parseByteArray: Parse[Array[Byte]] = Parse[Array[Byte]](x => x)
+    implicit val parseInt: Parse[Int] = Parse[Int](new String(_, "UTF-8").toInt)
+    implicit val parseLong: Parse[Long] = Parse[Long](new String(_, "UTF-8").toLong)
+    implicit val parseDouble: Parse[Double] = Parse[Double](new String(_, "UTF-8").toDouble)
   }
 
-  implicit val parseDefault = Parse[String](new String(_, "UTF-8"))
+  implicit val parseDefault: Parse[String] = Parse[String](new String(_, "UTF-8"))
 
-  val parseStringSafe = Parse[String](xs => new String(xs.iterator.flatMap{
+  val parseStringSafe: Parse[String] = Parse[String](xs => new String(xs.iterator.flatMap {
     case x if x > 31 && x < 127 => Iterator.single(x.toChar)
     case 10 => "\\n".iterator
     case 13 => "\\r".iterator

@@ -9,6 +9,8 @@ case class Unsubscribe(channels: Array[String]) extends Msg
 case object UnsubscribeAll extends Msg
 case class Publish(channel: String, msg: String) extends Msg
 
+@deprecated(
+  "Will be removed in the next version; please use https://github.com/debasishg/akka-redis-pubsub", "3.5")
 class Subscriber(client: RedisClient) extends Actor {
   var callback: PubSubMessage => Any = { m => }
 
@@ -31,6 +33,8 @@ class Subscriber(client: RedisClient) extends Actor {
   }
 }
 
+@deprecated(
+  "Will be removed in the next version; please use https://github.com/debasishg/akka-redis-pubsub", "3.5")
 class Publisher(client: RedisClient) extends Actor {
   def receive = {
     case Publish(channel, message) =>

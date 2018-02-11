@@ -15,8 +15,8 @@ trait IO extends Log {
   var in: InputStream = _
   var db: Int = _
 
-  def connected = {
-    socket != null && socket.isBound() && !socket.isClosed() && socket.isConnected() && !socket.isInputShutdown() && !socket.isOutputShutdown();
+  def connected: Boolean = {
+    socket != null && socket.isBound && !socket.isClosed && socket.isConnected && !socket.isInputShutdown && !socket.isOutputShutdown
   }
 
   // Connects the socket, and sets the input and output streams.
@@ -34,7 +34,7 @@ trait IO extends Log {
       true
     } catch {
       case x: Throwable =>
-        clearFd
+        clearFd()
         throw new RuntimeException(x)
     }
   }
@@ -42,10 +42,10 @@ trait IO extends Log {
   // Disconnects the socket.
   def disconnect: Boolean = {
     try {
-      socket.close
-      out.close
-      in.close
-      clearFd
+      socket.close()
+      out.close()
+      in.close()
+      clearFd()
       true
     } catch {
       case x: Throwable =>
@@ -53,23 +53,23 @@ trait IO extends Log {
     }
   }
 
-  def clearFd = {
+  def clearFd(): Unit = {
     socket = null
     out = null
     in = null
   }
 
   // Wrapper for the socket write operation.
-  def write_to_socket(data: Array[Byte])(op: OutputStream => Unit) = op(out)
+  def write_to_socket(data: Array[Byte])(op: OutputStream => Unit): Unit = op(out)
 
   // Writes data to a socket using the specified block.
-  def write(data: Array[Byte]) = {
+  def write(data: Array[Byte]): Unit = {
     ifDebug("C: " + parseStringSafe(data))
-    if (!connected) connect;
+    if (!connected) connect
     write_to_socket(data){ os =>
       try {
         os.write(data)
-        os.flush
+        os.flush()
       } catch {
         case x: Throwable => throw new RedisConnectionException("connection is closed. write error")
       }

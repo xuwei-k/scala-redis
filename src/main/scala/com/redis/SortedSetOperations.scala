@@ -8,7 +8,7 @@ trait SortedSetOperations {
   // ZADD (Variadic: >= 2.4)
   // Add the specified members having the specified score to the sorted set stored at key.
   def zadd(key: Any, score: Double, member: Any, scoreVals: (Double, Any)*)(implicit format: Format): Option[Long] =
-    send("ZADD", List(key, score, member) ::: scoreVals.toList.map(x => List(x._1, x._2)).flatten)(asLong)
+    send("ZADD", List(key, score, member) ::: scoreVals.toList.flatMap(x => List(x._1, x._2)))(asLong)
 
   // ZREM (Variadic: >= 2.4)
   // Remove the specified members from the sorted set value stored at key.

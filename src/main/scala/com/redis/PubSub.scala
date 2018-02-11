@@ -1,7 +1,7 @@
 package com.redis
 
 object Util {
-  object Break extends RuntimeException;
+  object Break extends RuntimeException
   def break { throw Break }
   def whileTrue(block: => Unit) {
     while (true)
@@ -28,7 +28,7 @@ trait PubSub extends PubOperations { self: Redis =>
       myThread.start() ;
     }
 
-    def run {
+    override def run() {
       try {
         whileTrue {
           asList match {
@@ -63,33 +63,33 @@ trait PubSub extends PubOperations { self: Redis =>
   }
 
   def pSubscribe(channel: String, channels: String*)(fn: PubSubMessage => Any) {
-    if (pubSub == true) { // already pubsub ing
+    if (pubSub) { // already pubsub ing
       pSubscribeRaw(channel, channels: _*)
       return
     }
     pubSub = true
     pSubscribeRaw(channel, channels: _*)
-    new Consumer(fn).start
+    new Consumer(fn).start()
   }
 
   def pSubscribeRaw(channel: String, channels: String*) {
     send("PSUBSCRIBE", channel :: channels.toList)(())
   }
 
-  def pUnsubscribe = {
+  def pUnsubscribe(): Unit = {
     send("PUNSUBSCRIBE")(())
   }
 
-  def pUnsubscribe(channel: String, channels: String*) = {
+  def pUnsubscribe(channel: String, channels: String*): Unit = {
     send("PUNSUBSCRIBE", channel :: channels.toList)(())
   }
   def subscribe(channel: String, channels: String*)(fn: PubSubMessage => Any) {
-    if (pubSub == true) { // already pubsub ing
+    if (pubSub) { // already pubsub ing
       subscribeRaw(channel, channels: _*)
     } else {
       pubSub = true
       subscribeRaw(channel, channels: _*)
-      new Consumer(fn).start
+      new Consumer(fn).start()
     }
   }
 
@@ -97,11 +97,11 @@ trait PubSub extends PubOperations { self: Redis =>
     send("SUBSCRIBE", channel :: channels.toList)(())
   }
 
-  def unsubscribe = {
+  def unsubscribe(): Unit = {
     send("UNSUBSCRIBE")(())
   }
 
-  def unsubscribe(channel: String, channels: String*) = {
+  def unsubscribe(channel: String, channels: String*): Unit = {
     send("UNSUBSCRIBE", channel :: channels.toList)(())
   }
 }
