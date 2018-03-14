@@ -19,6 +19,11 @@ trait SetOperations { self: Redis =>
   def spop[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
     send("SPOP", List(key))(asBulk)
 
+  // SPOP
+  // Remove and return multiple random elements (pop) from the Set value at key since (3.2).
+  def spop[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
+    send("SPOP", List(key, count))(asSet)
+
   // SMOVE
   // Move the specified member from one Set to another atomically.
   def smove(sourceKey: Any, destKey: Any, value: Any)(implicit format: Format): Option[Long] =
@@ -40,7 +45,7 @@ trait SetOperations { self: Redis =>
     send("SINTER", key :: keys.toList)(asSet)
 
   // SINTERSTORE
-  // Compute the intersection between the Sets stored at key1, key2, ..., keyN, 
+  // Compute the intersection between the Sets stored at key1, key2, ..., keyN,
   // and store the resulting Set at dstkey.
   // SINTERSTORE returns the size of the intersection, unlike what the documentation says
   // refer http://code.google.com/p/redis/issues/detail?id=121
@@ -53,7 +58,7 @@ trait SetOperations { self: Redis =>
     send("SUNION", key :: keys.toList)(asSet)
 
   // SUNIONSTORE
-  // Compute the union between the Sets stored at key1, key2, ..., keyN, 
+  // Compute the union between the Sets stored at key1, key2, ..., keyN,
   // and store the resulting Set at dstkey.
   // SUNIONSTORE returns the size of the union, unlike what the documentation says
   // refer http://code.google.com/p/redis/issues/detail?id=121
@@ -66,7 +71,7 @@ trait SetOperations { self: Redis =>
     send("SDIFF", key :: keys.toList)(asSet)
 
   // SDIFFSTORE
-  // Compute the difference between the Set key1 and all the Sets key2, ..., keyN, 
+  // Compute the difference between the Set key1 and all the Sets key2, ..., keyN,
   // and store the resulting Set at dstkey.
   def sdiffstore(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
     send("SDIFFSTORE", key :: keys.toList)(asLong)
