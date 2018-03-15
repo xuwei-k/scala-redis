@@ -9,7 +9,7 @@ import org.junit.runner.RunWith
 
 
 @RunWith(classOf[JUnitRunner])
-class SetOperationsSpec extends FunSpec 
+class SetOperationsSpec extends FunSpec
                         with Matchers
                         with BeforeAndAfterEach
                         with BeforeAndAfterAll {
@@ -87,6 +87,27 @@ class SetOperationsSpec extends FunSpec
     }
     it("should return nil if the key does not exist") {
       r.spop("set-1") should equal(None)
+    }
+  }
+
+  describe("spop with count") {
+    it("should pop a list of random members") {
+      r.sadd("set-1", "one").get should equal(1)
+      r.sadd("set-1", "two").get should equal(1)
+      r.sadd("set-1", "three").get should equal(1)
+      r.sadd("set-1", "four").get should equal(1)
+      r.sadd("set-1", "five").get should equal(1)
+      r.sadd("set-1", "six").get should equal(1)
+      r.sadd("set-1", "seven").get should equal(1)
+      r.sadd("set-1", "eight").get should equal(1)
+
+      r.spop("set-1", 2).get.size should equal(2)
+
+      // if supplied count > size, then whole set is returned
+      r.spop("set-1", 24).get.size should equal(6)
+
+      // if empty, returned set is empty
+      r.spop("set-1", 5).get shouldBe empty
     }
   }
 
@@ -171,7 +192,7 @@ class SetOperationsSpec extends FunSpec
       r.sadd("set-1", "foo").get should equal(1)
       r.sadd("set-1", "bar").get should equal(1)
       r.sadd("set-1", "baz").get should equal(1)
-      r.sinter("set-1", "set-4") should equal(Some(Set())) 
+      r.sinter("set-1", "set-4") should equal(Some(Set()))
     }
   }
 
