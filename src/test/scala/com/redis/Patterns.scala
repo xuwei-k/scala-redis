@@ -1,9 +1,8 @@
 package com.redis
 
 import serialization._
-import scala.concurrent.{ ExecutionContext, Await, Future }
+import scala.concurrent.{ Await, Future }
 import scala.concurrent.duration._
-import akka.actor.ActorSystem
 
 /**
  * Implementing some of the common patterns like scatter/gather, which can benefit from
@@ -25,25 +24,24 @@ object Patterns {
   def listPush(count: Int, key: String)(implicit clients: RedisClientPool) = { 
     clients.withClient { client =>
       (1 to count) foreach {i => client.rpush(key, i)}
-      assert(client.llen(key) == Some(count))
+      assert(client.llen(key).contains(count))
     }
     key
   }
 
   def listPop(count: Int, key: String)(implicit clients: RedisClientPool) = {
-    implicit val parseInt = Parse[Long](new String(_).toLong)
+    implicit val parseInt: Parse[Long] = Parse[Long](new String(_).toLong)
     clients.withClient { client =>
-      val list = (1 to count) map {i => client.lpop[Long](key).get}
-      assert(client.llen(key) == Some(0))
+      val list = (1 to count) map {_ => client.lpop[Long](key).get}
+      assert(client.llen(key).contains(0))
       list.sum
     }
   }
 
   // set up Executors
-  val system = ActorSystem("ScatterGatherSystem")
-  import system.dispatcher
+  import scala.concurrent.ExecutionContext.Implicits.global
 
-  val timeout = 5 minutes
+  val timeout: Duration = 5 minutes
 
   private[this] def flow[A](noOfRecipients: Int, opsPerClient: Int, keyPrefix: String, 
     fn: (Int, String) => A) = {
@@ -69,7 +67,7 @@ object Patterns {
       val allPops = Future.sequence(futurePops)
       allPops map {members => members.sum}
     }
-    Await.result(allSum, timeout).asInstanceOf[Long]
+    Await.result(allSum, timeout)
   }
 
   // scatter across clietns and gather the first future to complete
@@ -84,6 +82,6 @@ object Patterns {
     val firstSum = firstPush map {key =>
       listPop(opsPerClient, key)
     }
-    Await.result(firstSum, timeout).asInstanceOf[Int]
+    Await.result(firstSum, timeout)
   }
 }
