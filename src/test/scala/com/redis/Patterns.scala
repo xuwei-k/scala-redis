@@ -24,7 +24,7 @@ object Patterns {
   def listPush(count: Int, key: String)(implicit clients: RedisClientPool) = { 
     clients.withClient { client =>
       (1 to count) foreach {i => client.rpush(key, i)}
-      assert(client.llen(key).contains(count))
+      assert(client.llen(key) == Some(count))
     }
     key
   }
@@ -33,7 +33,7 @@ object Patterns {
     implicit val parseInt: Parse[Long] = Parse[Long](new String(_).toLong)
     clients.withClient { client =>
       val list = (1 to count) map {_ => client.lpop[Long](key).get}
-      assert(client.llen(key).contains(0))
+      assert(client.llen(key) == Some(0))
       list.sum
     }
   }
