@@ -98,11 +98,15 @@ trait PubSub extends PubOperations { self: Redis =>
   }
 
   def unsubscribe(): Unit = {
-    send("UNSUBSCRIBE")(())
+    val r = send("UNSUBSCRIBE")(())
+    pubSub = false
+    r
   }
 
   def unsubscribe(channel: String, channels: String*): Unit = {
-    send("UNSUBSCRIBE", channel :: channels.toList)(())
+    val r = send("UNSUBSCRIBE", channel :: channels.toList)(())
+    pubSub = false
+    r
   }
 }
 

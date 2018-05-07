@@ -28,4 +28,34 @@ class RedisClientSpec extends FunSpec
       new RedisClient("localhost", 6379, 1).toString shouldBe "localhost:6379/1"
     }
   }
+
+  describe("test subscribe") {
+    val r = new RedisClient("localhost", 6379)
+  
+    println(r.get("vvl:qm"))
+  
+    r.subscribe("vvl.qm") { m =>
+      println(m)
+    }
+  
+    Thread.sleep(3000)
+  
+    r.unsubscribe("vvl.qm")
+  
+    Thread.sleep(3000)
+  
+    println(r.get("vvl:qm"))
+  
+    r.subscribe("vvl.qm") { m =>
+      println(m)
+    }
+  
+    Thread.sleep(3000)
+  
+    r.unsubscribe("vvl.qm")
+  
+    Thread.sleep(3000)
+  
+    r.get("vvl:qm")
+  }
 }
