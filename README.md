@@ -191,7 +191,7 @@ private[this] def flow[A](noOfRecipients: Int, opsPerClient: Int, keyPrefix: Str
   fn: (Int, String) => A) = {
   (1 to noOfRecipients) map {i =>
     Future {
-      fn(opsPerClient, "list_" + i)
+      fn(opsPerClient, keyPrefix + i)
     }
   }
 }
