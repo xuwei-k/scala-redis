@@ -88,12 +88,12 @@ trait RedisCommand extends Redis with Operations
     }
   }
   
-  private def selectDatabase() {
+  private def selectDatabase(): Unit = {
     if (database != 0)
       select(database)
   }
 
-  private def authenticate() {
+  private def authenticate(): Unit = {
     secret.foreach(auth _)
   }
   

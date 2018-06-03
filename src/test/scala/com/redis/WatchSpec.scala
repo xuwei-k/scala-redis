@@ -32,7 +32,7 @@ class WatchSpec extends FunSpec
     it("should fail a transaction if modified from another client") {
       implicit val clients = new RedisClientPool("localhost", 6379)
       class P1 extends Runnable {
-        def run() {
+        def run(): Unit = {
           clients.withClient { client =>
             client.watch("key")
             client.pipeline { p =>
@@ -45,7 +45,7 @@ class WatchSpec extends FunSpec
         }
       }
       class P2 extends Runnable {
-        def run() {
+        def run(): Unit = {
           clients.withClient { client =>
             Thread.sleep(10)
             client.set("key", "anshin")

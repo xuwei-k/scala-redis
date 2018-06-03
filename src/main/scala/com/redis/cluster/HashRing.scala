@@ -41,7 +41,7 @@ case class HashRing[T](nodes: List[T], replicas: Int) {
   /*
    * Removes node from the ring
    */
-  def removeNode(node: T) {
+  def removeNode(node: T): Unit = {
     cluster -= node
     (1 to replicas).foreach {replica =>
       ring -= nodeHashFor(node, replica)
