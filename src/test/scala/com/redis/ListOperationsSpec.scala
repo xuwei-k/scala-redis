@@ -354,12 +354,12 @@ class ListOperationsSpec extends FunSpec
     it("should pop blockingly") {
       val r1 = new RedisClient("localhost", 6379)
       class Foo extends Runnable {
-        def start () {
+        def start (): Unit = {
           val myThread = new Thread(this) ;
           myThread.start() ;
         }
 
-        def run {
+        def run: Unit = {
           r.brpoplpush("l1", "l2", 3) should equal(Some("a"))
           r1.disconnect
           r.lpop("l2") should equal(Some("a"))
@@ -383,12 +383,12 @@ class ListOperationsSpec extends FunSpec
     it ("should pop in a blocking mode") {
       val r1 = new RedisClient("localhost", 6379)
       class Foo extends Runnable {
-        def start () {
+        def start (): Unit = {
           val myThread = new Thread(this) ;
           myThread.start() ;
         }
 
-        def run {
+        def run: Unit = {
           r.blpop(3, "l1", "l2") should equal(Some("l1", "a"))
           r1.disconnect
         }

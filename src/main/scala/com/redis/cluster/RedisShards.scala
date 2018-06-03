@@ -49,7 +49,7 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   }
   
   //remove a server
-  def removeServer(nodename: String){
+  def removeServer(nodename: String): Unit ={
     if (clients.contains(nodename)) {
       val pool = clients(nodename)
       pool.close

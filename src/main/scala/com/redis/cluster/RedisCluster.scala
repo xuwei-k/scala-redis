@@ -111,7 +111,7 @@ abstract class RedisCluster(hosts: ClusterNode*) extends RedisCommand {
   }
   
   //remove a server
-  def removeServer(nodename: String){
+  def removeServer(nodename: String): Unit ={
     hr.cluster.find(_.node.nodename.equals(nodename)) match {
       case Some(pool) => {
         hr removeNode(pool)

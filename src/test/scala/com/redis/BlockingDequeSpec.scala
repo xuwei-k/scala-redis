@@ -21,12 +21,12 @@ class BlockingDequeSpec extends FunSpec
       val r2 = new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
 
       class Foo extends Runnable {
-        def start () {
+        def start (): Unit = {
           val myThread = new Thread(this) ;
           myThread.start() ;
         }
 
-        def run {
+        def run: Unit = {
           val v = r1.poll
           v.get should equal("foo")
           r1.clear
@@ -47,12 +47,12 @@ class BlockingDequeSpec extends FunSpec
       val r2 = new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
 
       class Foo extends Runnable {
-        def start () {
+        def start (): Unit = {
           val myThread = new Thread(this) ;
           myThread.start() ;
         }
 
-        def run {
+        def run: Unit = {
           val v = r1.pollLast
           v.get should equal("foo")
           r1.clear
