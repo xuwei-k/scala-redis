@@ -6,7 +6,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "net.debasishg",
   version := "3.7",
   scalaVersion := "2.11.12",
-  crossScalaVersions := Seq("2.12.4", "2.11.12", "2.10.7"),
+  crossScalaVersions := Seq("2.12.6", "2.11.12", "2.10.7"),
 
   scalacOptions in Compile ++= Seq( "-unchecked", "-feature", "-language:postfixOps", "-deprecation" ),
 
