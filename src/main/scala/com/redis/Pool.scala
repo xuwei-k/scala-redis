@@ -1,45 +1,54 @@
 package com.redis
 
-import org.apache.commons.pool._
-import org.apache.commons.pool.impl._
+import java.util.concurrent.TimeUnit
+
+import org.apache.commons.pool2._
+import org.apache.commons.pool2.impl._
 import com.redis.cluster.ClusterNode
 
 private [redis] class RedisClientFactory(val host: String, val port: Int, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0)
-  extends PoolableObjectFactory[RedisClient] {
+  extends PooledObjectFactory[RedisClient] {
 
   // when we make an object it's already connected
-  def makeObject: RedisClient = {
-    new RedisClient(host, port, database, secret, timeout)
+  override def makeObject: PooledObject[RedisClient] = {
+    new DefaultPooledObject[RedisClient](new RedisClient(host, port, database, secret, timeout))
   }
 
   // quit & disconnect
-  def destroyObject(rc: RedisClient): Unit = {
+  override def destroyObject(p: PooledObject[RedisClient]): Unit = {
+    val rc = p.getObject
     rc.quit // need to quit for closing the connection
     rc.disconnect // need to disconnect for releasing sockets
   }
 
   // noop: we want to have it connected
-  def passivateObject(rc: RedisClient): Unit = {}
-  def validateObject(rc: RedisClient): Boolean = rc.connected
+  override def passivateObject(p: PooledObject[RedisClient]): Unit = {}
+  override def validateObject(p: PooledObject[RedisClient]): Boolean = p.getObject.connected
 
   // noop: it should be connected already
-  def activateObject(rc: RedisClient): Unit = {}
+  override def activateObject(p: PooledObject[RedisClient]): Unit = {}
 }
 
 object RedisClientPool {
-  val UNLIMITED_CONNECTIONS = -1
-
-  val WHEN_EXHAUSTED_BLOCK = GenericObjectPool.WHEN_EXHAUSTED_BLOCK
-  val WHEN_EXHAUSTED_FAIL = GenericObjectPool.WHEN_EXHAUSTED_FAIL
-  val WHEN_EXHAUSTED_GROW = GenericObjectPool.WHEN_EXHAUSTED_GROW
+  val UNLIMITED_CONNECTIONS: Int = -1
 }
 
-class RedisClientPool(val host: String, val port: Int, val maxIdle: Int = 8, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0, 
-    val maxConnections: Int = RedisClientPool.UNLIMITED_CONNECTIONS, val whenExhaustedBehavior: Byte = RedisClientPool.WHEN_EXHAUSTED_BLOCK, val poolWaitTimeout: Long = 3000) {
-  val pool = new GenericObjectPool(new RedisClientFactory(host, port, database, secret, timeout), maxConnections, whenExhaustedBehavior, poolWaitTimeout, maxIdle, false, true)
+class RedisClientPool(val host: String, val port: Int, val maxIdle: Int = 8, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0,
+                      val maxConnections: Int = RedisClientPool.UNLIMITED_CONNECTIONS, val poolWaitTimeout: Long = 3000) {
+
+  val objectPoolConfig = new GenericObjectPoolConfig
+  objectPoolConfig.setMaxIdle(maxIdle)
+  objectPoolConfig.setMaxTotal(maxConnections)
+  objectPoolConfig.setJmxEnabled(false)
+  objectPoolConfig.setBlockWhenExhausted(true)
+
+  val abandonedConfig = new AbandonedConfig
+  abandonedConfig.setRemoveAbandonedOnBorrow(true)
+  abandonedConfig.setRemoveAbandonedTimeout(TimeUnit.MILLISECONDS.toSeconds(poolWaitTimeout).toInt)
+  val pool = new GenericObjectPool(new RedisClientFactory(host, port, database, secret, timeout), objectPoolConfig,abandonedConfig)
   override def toString: String = host + ":" + String.valueOf(port)
 
-  def withClient[T](body: RedisClient => T) = {
+  def withClient[T](body: RedisClient => T): T = {
     val client = pool.borrowObject
     try {
       body(client)
@@ -53,9 +62,9 @@ class RedisClientPool(val host: String, val port: Int, val maxIdle: Int = 8, val
 }
 
 /**
- *
- * @param node
- */
+  *
+  * @param node
+  */
 class IdentifiableRedisClientPool(val node: ClusterNode)
   extends RedisClientPool (node.host, node.port, node.maxIdle, node.database, node.secret,node.timeout){
   override def toString: String = node.nodename
