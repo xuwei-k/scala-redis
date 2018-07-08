@@ -6,11 +6,14 @@ trait EvalOperations { self: Redis =>
 
   // EVAL
   // evaluates lua code on the server.
-  def evalMultiBulk[A](luaCode: String, keys: List[Any], args: List[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] =
+  def evalMultiBulk[A](luaCode: String, keys: List[Any], args: List[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] = 
     send("EVAL",  argsForEval(luaCode, keys, args))(asList[A])
 
   def evalBulk[A](luaCode: String, keys: List[Any], args: List[Any])(implicit format: Format, parse: Parse[A]): Option[A] =
     send("EVAL", argsForEval(luaCode, keys, args))(asBulk)
+    
+  def evalInt(luaCode: String, keys: List[Any], args: List[Any]): Option[Int] = 
+    send("EVAL", argsForEval(luaCode, keys, args))(asInt)
     
   def evalMultiSHA[A](shahash: String, keys: List[Any], args: List[Any])(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] =
     send("EVALSHA", argsForEval(shahash, keys, args))(asList[A])
