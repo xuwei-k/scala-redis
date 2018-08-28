@@ -18,7 +18,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
 lazy val coreSettings = commonSettings ++ Seq(
   name := "RedisClient",
   libraryDependencies ++= Seq(
-    "commons-pool"      %  "commons-pool"            % "2.5.0",
+    "commons-pool"      %  "commons-pool"            % "2.6.0",
     "org.slf4j"         %  "slf4j-api"               % "1.7.25",
     "org.slf4j"         %  "slf4j-log4j12"           % "1.7.25"      % "provided",
     "log4j"             %  "log4j"                   % "1.2.17"      % "provided",
