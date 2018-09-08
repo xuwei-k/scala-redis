@@ -10,7 +10,6 @@ import com.redis.RedisClient
 import com.redis.serialization.Format
 
 import collection.mutable.WrappedArray
-import scala.collection.mutable
 
 
 @RunWith(classOf[JUnitRunner])
@@ -20,7 +19,7 @@ class RedisClusterSpec extends FunSpec
                        with BeforeAndAfterAll {
 
   val nodes = Array(ClusterNode("node1", "localhost", 6379), ClusterNode("node2", "localhost", 6380), ClusterNode("node3", "localhost", 6381))
-  val r = new RedisCluster(new mutable.WrappedArray.ofRef(nodes).toSeq: _*) {
+  val r = new RedisCluster(new WrappedArray.ofRef(nodes).toSeq: _*) {
     val keyTag = Some(RegexKeyTag)
   }
 
