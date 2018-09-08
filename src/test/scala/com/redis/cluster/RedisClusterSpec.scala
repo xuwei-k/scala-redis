@@ -8,6 +8,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import com.redis.RedisClient
 import com.redis.serialization.Format
+
 import collection.mutable.WrappedArray
 
 
@@ -18,7 +19,7 @@ class RedisClusterSpec extends FunSpec
                        with BeforeAndAfterAll {
 
   val nodes = Array(ClusterNode("node1", "localhost", 6379), ClusterNode("node2", "localhost", 6380), ClusterNode("node3", "localhost", 6381))
-  val r = new RedisCluster(new WrappedArray.ofRef(nodes): _*) {
+  val r = new RedisCluster(new WrappedArray.ofRef(nodes).toSeq: _*) {
     val keyTag = Some(RegexKeyTag)
   }
 
@@ -104,7 +105,7 @@ class RedisClusterSpec extends FunSpec
     }
 
     it("replace node should not change hash ring order"){
-      val r = new RedisCluster(new WrappedArray.ofRef(nodes): _*) {
+      val r = new RedisCluster(new WrappedArray.ofRef(nodes).toSeq: _*) {
 		  val keyTag = Some(RegexKeyTag)
 	  }
       r.set("testkey1", "testvalue2")
@@ -130,7 +131,7 @@ class RedisClusterSpec extends FunSpec
     }
     
     it("remove failure node should change hash ring order so that key on failure node should be served by other running nodes"){
-	  val r = new RedisCluster(new WrappedArray.ofRef(nodes): _*) {
+	  val r = new RedisCluster(new WrappedArray.ofRef(nodes).toSeq: _*) {
 		  val keyTag = Some(RegexKeyTag)
 	  }
       r.set("testkey1", "testvalue2")
@@ -147,7 +148,7 @@ class RedisClusterSpec extends FunSpec
     }
     
     it("list nodes should return the running nodes but not configured nodes"){
-      val r = new RedisCluster(new WrappedArray.ofRef(nodes): _*) {
+      val r = new RedisCluster(new WrappedArray.ofRef(nodes).toSeq: _*) {
 		  val keyTag = Some(RegexKeyTag)
 	  }
       r.listServers.toSet should equal (nodes.toSet)
