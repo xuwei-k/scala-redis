@@ -130,5 +130,26 @@ class EvalOperationsSpec extends FunSpec
       
       r.scriptExists(shahash.get) should equal (Some(0))
     }
+
+    it("should do stuff") {      
+      r.lpush("content", "{\"source\": \"output1.txt\", \"col1\": \"water_pressure\", \"col2\": \"sunday\", \"col3\": \"december\"}")
+      r.lpush("content", "{\"source\": \"output1.txt\", \"col1\": \"air_pressure\", \"col2\": \"saturday\", \"col3\": \"november\"}")
+      r.lpush("content", "{\"source\": \"output2.txt\", \"col1\": \"air_pressure\", \"col2\": \"saturday\", \"col3\": \"november\"}")
+
+      val luaCode = """
+            if redis.call("EXISTS", KEYS[1]) == 1 then
+              local res = {}
+              local payload = redis.call("LRANGE", KEYS[1], 0, -1)
+              local row = cjson.decode(payload[1])
+              res[1] = row["source"]
+              return #res
+            else
+              return -1
+            end
+	        """
+
+      val res = r.evalInt(luaCode, List("content"), List())
+      res should equal (Some(1))
+    }
   }
 }
