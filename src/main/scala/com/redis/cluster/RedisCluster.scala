@@ -81,7 +81,7 @@ abstract class RedisCluster(hosts: ClusterNode*) extends RedisCommand {
   // get node for the key
   def nodeForKey(key: Any)(implicit format: Format): IdentifiableRedisClientPool = {
     val bKey = format(key)
-    hr.getNode(keyTag.flatMap(_.tag(bKey)).getOrElse(bKey))
+    hr.getNode(keyTag.flatMap(_.tag(bKey.toIndexedSeq)).getOrElse(bKey.toIndexedSeq))
   }
   
   def processForKey[T](key: Any)(body: RedisCommand => T)(implicit format: Format): T = {

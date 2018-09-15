@@ -93,7 +93,7 @@ trait IO extends Log {
         } else {
           if (found != Nil) {
             delimiter = crlf
-            build ++= found.reverseMap(_.toByte)
+            build ++= found.reverseIterator.map(_.toByte).toList
             found = Nil
           }
           build += next.toByte

@@ -25,7 +25,7 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   // get node for the key
   def nodeForKey(key: Any)(implicit format: Format): RedisClientPool = {
     val bKey = format(key)
-    val selectedNode = hr.getNode(keyTag.flatMap(_.tag(bKey)).getOrElse(bKey))
+    val selectedNode = hr.getNode(keyTag.flatMap(_.tag(bKey.toIndexedSeq)).getOrElse(bKey.toIndexedSeq))
     clients(selectedNode)
   }
   
