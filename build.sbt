@@ -6,7 +6,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   organization := "net.debasishg",
   version := "3.8",
   scalaVersion := "2.12.6",
-  crossScalaVersions := Seq("2.12.6", "2.11.12", "2.10.7", "2.13.0-M4"),
+  crossScalaVersions := Seq("2.12.7", "2.11.12", "2.10.7", "2.13.0-M5"),
 
   scalacOptions in Compile ++= Seq( "-unchecked", "-feature", "-language:postfixOps", "-deprecation" ),
 
@@ -23,7 +23,7 @@ lazy val coreSettings = commonSettings ++ Seq(
     "org.slf4j"         %  "slf4j-log4j12"           % "1.7.25"      % "provided",
     "log4j"             %  "log4j"                   % "1.2.17"      % "provided",
     "junit"             %  "junit"                   % "4.12"        % "test",
-    "org.scalatest"     %%  "scalatest"              % "3.0.6-SNAP2" % "test"),
+    "org.scalatest"     %%  "scalatest"              % "3.0.6-SNAP3" % "test"),
 
   parallelExecution in Test := false,
   publishTo := version { (v: String) =>
