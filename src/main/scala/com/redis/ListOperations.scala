@@ -10,12 +10,12 @@ trait ListOperations { self: Redis =>
     send("LPUSH", List(key, value) ::: values.toList)(asLong)
 
   // LPUSHX (Variadic: >= 2.4)
-  // add value to the tail of the list stored at key
+  // add value to the head of the list stored at key
   def lpushx(key: Any, value: Any)(implicit format: Format): Option[Long] =
     send("LPUSHX", List(key, value))(asLong)
 
   // RPUSH (Variadic: >= 2.4)
-  // add values to the head of the list stored at key
+  // add values to the tail of the list stored at key
   def rpush(key: Any, value: Any, values: Any*)(implicit format: Format): Option[Long] =
     send("RPUSH", List(key, value) ::: values.toList)(asLong)
 
