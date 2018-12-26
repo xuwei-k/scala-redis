@@ -111,7 +111,7 @@ class RedisClusterSpec extends FunSpec
       r.set("testkey1", "testvalue2")
       r.get("testkey1") should equal (Some("testvalue2"))
 
-      val nodename = r.hr.getNode(formattedKey("testkey1")).toString
+      val nodename = r.hr.getNode(formattedKey("testkey1").toIndexedSeq).toString
 
       //simulate the same value is duplicated to slave
       //for test, don't set to master, just to make sure the expected value is loaded from slave
@@ -137,7 +137,7 @@ class RedisClusterSpec extends FunSpec
       r.set("testkey1", "testvalue2")
       r.get("testkey1") should equal (Some("testvalue2"))
 
-      val nodename = r.hr.getNode(formattedKey("testkey1")).toString
+      val nodename = r.hr.getNode(formattedKey("testkey1").toIndexedSeq).toString
 
       //replaced master with slave on the same node
       r.removeServer(nodename)

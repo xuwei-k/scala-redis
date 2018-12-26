@@ -67,7 +67,7 @@ class PoolSpec extends FunSpec
       val l = (0 until 5000).map(_.toString).toList
       val fns = List[List[String] => Option[Long]](lp, rp, set)
       val tasks = fns map (fn => Future { fn(l) })
-      val results = Await.result(Future.sequence(tasks), 20 seconds)
+      val results = Await.result(Future.sequence(tasks), 60 seconds)
       results should equal(List(Some(5000), Some(5000), Some(1000)))
     }
   }
