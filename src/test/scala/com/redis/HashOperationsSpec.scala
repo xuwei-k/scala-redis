@@ -89,7 +89,7 @@ class HashOperationsSpec extends FunSpec
       r.hincrbyfloat("hash1", "field1", 2.0e2f) should be(Some(5200f))
       r.hset("hash1", "field1", "abc")
       val thrown = the [Exception] thrownBy { r.hincrbyfloat("hash1", "field1", 2.0e2f) }
-      thrown.getMessage should include("hash value is not a valid float")
+      thrown.getMessage should include("hash value is not a float")
     }
 
     it("should delete multiple keys if present on a hash") {
