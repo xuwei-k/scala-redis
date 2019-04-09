@@ -80,10 +80,10 @@ abstract class RedisShards(val hosts: List[ClusterNode]) extends RedisCommand {
   override def rename(oldkey: Any, newkey: Any)(implicit format: Format): Boolean = processForKey(oldkey)(_.rename(oldkey, newkey))
   override def renamenx(oldkey: Any, newkey: Any)(implicit format: Format): Boolean = processForKey(oldkey)(_.renamenx(oldkey, newkey))
   override def dbsize: Option[Long] =
-    Some(onAllConns(_.dbsize).foldLeft(0l)((a, b) => b.map(a+).getOrElse(a)))
+    Some(onAllConns(_.dbsize).foldLeft(0L)((a, b) => b.map(a+).getOrElse(a)))
   override def exists(key: Any)(implicit format: Format): Boolean = processForKey(key)(_.exists(key))
   override def del(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
-    Some((key :: keys.toList).groupBy(nodeForKey).foldLeft(0l) { case (t,(n,ks)) => n.withClient{ client => client.del(ks.head,ks.tail:_*).map(t+).getOrElse(t)} })
+    Some((key :: keys.toList).groupBy(nodeForKey).foldLeft(0L) { case (t,(n,ks)) => n.withClient{ client => client.del(ks.head,ks.tail:_*).map(t+).getOrElse(t)} })
   override def getType(key: Any)(implicit format: Format): Option[String] = processForKey(key)(_.getType(key))
   override def expire(key: Any, expiry: Int)(implicit format: Format): Boolean =
     processForKey(key)(_.expire(key, expiry))
