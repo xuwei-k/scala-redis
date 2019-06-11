@@ -5,11 +5,11 @@ import java.net.SocketException
 import com.redis.serialization.Format
 
 object RedisClient {
-  trait SortOrder
+  sealed trait SortOrder
   case object ASC extends SortOrder
   case object DESC extends SortOrder
 
-  trait Aggregate
+  sealed trait Aggregate
   case object SUM extends Aggregate
   case object MIN extends Aggregate
   case object MAX extends Aggregate
