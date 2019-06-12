@@ -1,0 +1,14 @@
+language: scala
+dist: xenial
+scala:
+  - 2.12.8
+  - 2.11.12
+  - 2.13.0
+jdk:
+  - openjdk8
+services:
+  - redis-server
+before_script:
+  - sudo redis-server /etc/redis/redis.conf --port 6380
+  - sudo redis-server /etc/redis/redis.conf --port 6381
+  - sudo redis-server /etc/redis/redis.conf --port 6382
