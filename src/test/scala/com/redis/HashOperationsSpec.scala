@@ -89,7 +89,18 @@ class HashOperationsSpec extends FunSpec
       r.hincrbyfloat("hash1", "field1", 2.0e2f) should be(Some(5200f))
       r.hset("hash1", "field1", "abc")
       val thrown = the [Exception] thrownBy { r.hincrbyfloat("hash1", "field1", 2.0e2f) }
-      thrown.getMessage should include regex "hash value is not a (valid )?float"
+      thrown.getMessage should include("hash value is not a float")
+    }
+
+    it("should delete multiple keys if present on a hash") {
+      r.hset("hash100", "key1", 10.20f)
+      r.hset("hash100", "key2", 10.30f)
+      r.hset("hash100", "key3", 10.40f)
+      r.hset("hash100", "key4", 10.50f)
+      r.hset("hash100", "key5", 10.60f)
+      r.hkeys("hash100") should be(Some(List("key1", "key2", "key3", "key4", "key5")))
+      r.hdel("hash100", "key1", "key2", "key3", "key4", "key5") should equal(Some(5))
+      r.hkeys("hash100") should be(Some(List()))
     }
   }
 

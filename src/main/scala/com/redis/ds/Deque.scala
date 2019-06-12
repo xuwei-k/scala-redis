@@ -60,7 +60,7 @@ abstract class RedisDeque[A](val blocking: Boolean = false, val timeoutInSecs: I
       brpop[String, A](timeoutInSecs, key).map(_._2)
     } else rpop[A](key) 
 
-  def size: Long = llen(key) getOrElse(0l)
+  def size: Long = llen(key) getOrElse(0L)
 
   def isEmpty: Boolean = size == 0
 

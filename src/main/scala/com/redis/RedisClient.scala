@@ -5,11 +5,11 @@ import java.net.SocketException
 import com.redis.serialization.Format
 
 object RedisClient {
-  trait SortOrder
+  sealed trait SortOrder
   case object ASC extends SortOrder
   case object DESC extends SortOrder
 
-  trait Aggregate
+  sealed trait Aggregate
   case object SUM extends Aggregate
   case object MIN extends Aggregate
   case object MAX extends Aggregate
@@ -113,8 +113,8 @@ class RedisClient(override val host: String, override val port: Int,
     database = RedisClient.extractDatabaseNumber(connectionUri),
     secret = Option(connectionUri.getUserInfo)
       .flatMap(_.split(':') match {
-        case Array(_, password, _*) ⇒ Some(password)
-        case _ ⇒ None
+        case Array(_, password, _*) => Some(password)
+        case _ => None
       })
   )
   override def toString: String = host + ":" + String.valueOf(port) + "/" + database
