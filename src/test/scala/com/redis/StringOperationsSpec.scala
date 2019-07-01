@@ -47,14 +47,14 @@ with BeforeAndAfterAll {
 
   describe("set if exists or not") {
     it("should set key/value pairs with exclusiveness and expire") {
-      r.set("amit-1", "mor", false, Seconds(6))
-      r.get("amit-1") match {
+      r.set("amit-2", "mor", false, Seconds(6))
+      r.get("amit-2") match {
         case Some(s: String) => s should equal("mor")
         case None => fail("should return mor")
       }
       Thread.sleep(6000)
-      r.get("amit-1") should equal(None)
-      r.del("amit-1")
+      r.get("amit-2") should equal(None)
+      r.del("amit-2")
     }
   }
 
