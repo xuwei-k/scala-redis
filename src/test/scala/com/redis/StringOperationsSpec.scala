@@ -1,5 +1,6 @@
 package com.redis
 
+import java.util.concurrent.TimeUnit
 import org.scalatest.FunSpec
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.BeforeAndAfterAll
@@ -52,7 +53,7 @@ with BeforeAndAfterAll {
         case Some(s: String) => s should equal("mor")
         case None => fail("should return mor")
       }
-      Thread.sleep(6000)
+      TimeUnit.SECONDS.sleep(6)
       r.get("amit-2") should equal(None)
       r.del("amit-2")
     }
