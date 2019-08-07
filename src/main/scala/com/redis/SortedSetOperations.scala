@@ -1,47 +1,34 @@
 package com.redis
 
-import serialization._
+import com.redis.RedisClient._
+import com.redis.api.SortedSetApi
+import com.redis.serialization._
 
-trait SortedSetOperations {
+trait SortedSetOperations extends SortedSetApi {
   self: Redis =>
 
-  // ZADD (Variadic: >= 2.4)
-  // Add the specified members having the specified score to the sorted set stored at key.
-  def zadd(key: Any, score: Double, member: Any, scoreVals: (Double, Any)*)(implicit format: Format): Option[Long] =
+  override def zadd(key: Any, score: Double, member: Any, scoreVals: (Double, Any)*)(implicit format: Format): Option[Long] =
     send("ZADD", List(key, score, member) ::: scoreVals.toList.flatMap(x => List(x._1, x._2)))(asLong)
 
-  // ZREM (Variadic: >= 2.4)
-  // Remove the specified members from the sorted set value stored at key.
-  def zrem(key: Any, member: Any, members: Any*)(implicit format: Format): Option[Long] =
+  override def zrem(key: Any, member: Any, members: Any*)(implicit format: Format): Option[Long] =
     send("ZREM", List(key, member) ::: members.toList)(asLong)
 
-  // ZINCRBY
-  // 
-  def zincrby(key: Any, incr: Double, member: Any)(implicit format: Format): Option[Double] =
+  override def zincrby(key: Any, incr: Double, member: Any)(implicit format: Format): Option[Double] =
     send("ZINCRBY", List(key, incr, member))(asBulk(Parse.Implicits.parseDouble))
 
-  // ZCARD
-  // 
-  def zcard(key: Any)(implicit format: Format): Option[Long] =
+  override def zcard(key: Any)(implicit format: Format): Option[Long] =
     send("ZCARD", List(key))(asLong)
 
-  // ZSCORE
-  // 
-  def zscore(key: Any, element: Any)(implicit format: Format): Option[Double] =
+  override def zscore(key: Any, element: Any)(implicit format: Format): Option[Double] =
     send("ZSCORE", List(key, element))(asBulk(Parse.Implicits.parseDouble))
 
-  // ZRANGE
-  // 
-  import Commands._
-  import RedisClient._
-
-  def zrange[A](key: Any, start: Int = 0, end: Int = -1, sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[A]] =
+  override def zrange[A](key: Any, start: Int = 0, end: Int = -1, sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[A]] =
     send(if (sortAs == ASC) "ZRANGE" else "ZREVRANGE", List(key, start, end))(asList.map(_.flatten))
 
-  def zrangeWithScore[A](key: Any, start: Int = 0, end: Int = -1, sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[(A, Double)]] =
+  override def zrangeWithScore[A](key: Any, start: Int = 0, end: Int = -1, sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[(A, Double)]] =
     send(if (sortAs == ASC) "ZRANGE" else "ZREVRANGE", List(key, start, end, "WITHSCORES"))(asListPairs(parse, Parse.Implicits.parseDouble).map(_.flatten))
 
-  def zrangebylex[A](key: Any, min: String, max: String, limit: Option[(Int, Int)])(implicit format: Format, parse: Parse[A]): Option[List[A]] = {
+  override def zrangebylex[A](key: Any, min: String, max: String, limit: Option[(Int, Int)])(implicit format: Format, parse: Parse[A]): Option[List[A]] = {
     if (!limit.isEmpty) {
       val params = limit.toList.flatMap(l => List(key, min, max, "LIMIT", l._1, l._2))
       send("ZRANGEBYLEX", params)(asList.map(_.flatten))
@@ -51,15 +38,13 @@ trait SortedSetOperations {
     }
   }
 
-  // ZRANGEBYSCORE
-  // 
-  def zrangebyscore[A](key: Any,
-                       min: Double = Double.NegativeInfinity,
-                       minInclusive: Boolean = true,
-                       max: Double = Double.PositiveInfinity,
-                       maxInclusive: Boolean = true,
-                       limit: Option[(Int, Int)],
-                       sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[A]] = {
+  override def zrangebyscore[A](key: Any,
+                                min: Double = Double.NegativeInfinity,
+                                minInclusive: Boolean = true,
+                                max: Double = Double.PositiveInfinity,
+                                maxInclusive: Boolean = true,
+                                limit: Option[(Int, Int)],
+                                sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[A]] = {
 
     val (limitEntries, minParam, maxParam) =
       zrangebyScoreWithScoreInternal(min, minInclusive, max, maxInclusive, limit)
@@ -71,13 +56,13 @@ trait SortedSetOperations {
     send(params._1, params._2)(asList.map(_.flatten))
   }
 
-  def zrangebyscoreWithScore[A](key: Any,
-                                min: Double = Double.NegativeInfinity,
-                                minInclusive: Boolean = true,
-                                max: Double = Double.PositiveInfinity,
-                                maxInclusive: Boolean = true,
-                                limit: Option[(Int, Int)],
-                                sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[(A, Double)]] = {
+  override def zrangebyscoreWithScore[A](key: Any,
+                                         min: Double = Double.NegativeInfinity,
+                                         minInclusive: Boolean = true,
+                                         max: Double = Double.PositiveInfinity,
+                                         maxInclusive: Boolean = true,
+                                         limit: Option[(Int, Int)],
+                                         sortAs: SortOrder = ASC)(implicit format: Format, parse: Parse[A]): Option[List[(A, Double)]] = {
 
     val (limitEntries, minParam, maxParam) =
       zrangebyScoreWithScoreInternal(min, minInclusive, max, maxInclusive, limit)
@@ -109,46 +94,31 @@ trait SortedSetOperations {
     (limitEntries, minParam, maxParam)
   }
 
-  // ZRANK
-  // ZREVRANK
-  //
-  def zrank(key: Any, member: Any, reverse: Boolean = false)(implicit format: Format): Option[Long] =
+  override def zrank(key: Any, member: Any, reverse: Boolean = false)(implicit format: Format): Option[Long] =
     send(if (reverse) "ZREVRANK" else "ZRANK", List(key, member))(asLong)
 
-  // ZREMRANGEBYRANK
-  //
-  def zremrangebyrank(key: Any, start: Int = 0, end: Int = -1)(implicit format: Format): Option[Long] =
+  override def zremrangebyrank(key: Any, start: Int = 0, end: Int = -1)(implicit format: Format): Option[Long] =
     send("ZREMRANGEBYRANK", List(key, start, end))(asLong)
 
-  // ZREMRANGEBYSCORE
-  //
-  def zremrangebyscore(key: Any, start: Double = Double.NegativeInfinity, end: Double = Double.PositiveInfinity)(implicit format: Format): Option[Long] =
+  override def zremrangebyscore(key: Any, start: Double = Double.NegativeInfinity, end: Double = Double.PositiveInfinity)(implicit format: Format): Option[Long] =
     send("ZREMRANGEBYSCORE", List(key, start, end))(asLong)
 
-  // ZUNION
-  //
-  def zunionstore(dstKey: Any, keys: Iterable[Any], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
+  override def zunionstore(dstKey: Any, keys: Iterable[Any], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZUNIONSTORE", (Iterator(dstKey, keys.size) ++ keys.iterator ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
-  def zunionstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any, Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
+  override def zunionstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any, Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZUNIONSTORE", (Iterator(dstKey, kws.size) ++ kws.iterator.map(_._1) ++ Iterator.single("WEIGHTS") ++ kws.iterator.map(_._2) ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
-  // ZINTERSTORE
-  //
-  def zinterstore(dstKey: Any, keys: Iterable[Any], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
+  override def zinterstore(dstKey: Any, keys: Iterable[Any], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZINTERSTORE", (Iterator(dstKey, keys.size) ++ keys.iterator ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
-  def zinterstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any, Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
+  override def zinterstoreWeighted(dstKey: Any, kws: Iterable[Product2[Any, Double]], aggregate: Aggregate = SUM)(implicit format: Format): Option[Long] =
     send("ZINTERSTORE", (Iterator(dstKey, kws.size) ++ kws.iterator.map(_._1) ++ Iterator.single("WEIGHTS") ++ kws.iterator.map(_._2) ++ Iterator("AGGREGATE", aggregate)).toList)(asLong)
 
-  // ZCOUNT
-  //
-  def zcount(key: Any, min: Double = Double.NegativeInfinity, max: Double = Double.PositiveInfinity, minInclusive: Boolean = true, maxInclusive: Boolean = true)(implicit format: Format): Option[Long] =
+  override def zcount(key: Any, min: Double = Double.NegativeInfinity, max: Double = Double.PositiveInfinity, minInclusive: Boolean = true, maxInclusive: Boolean = true)(implicit format: Format): Option[Long] =
     send("ZCOUNT", List(key, Format.formatDouble(min, minInclusive), Format.formatDouble(max, maxInclusive)))(asLong)
 
-  // ZSCAN
-  // Incrementally iterate sorted sets elements and associated scores (since 2.8)
-  def zscan[A](key: Any, cursor: Int, pattern: Any = "*", count: Int = 10)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] =
+  override def zscan[A](key: Any, cursor: Int, pattern: Any = "*", count: Int = 10)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] =
     send("ZSCAN", key :: cursor :: ((x: List[Any]) => if (pattern == "*") x else "match" :: pattern :: x) (if (count == 10) Nil else List("count", count)))(asPair)
 
 }

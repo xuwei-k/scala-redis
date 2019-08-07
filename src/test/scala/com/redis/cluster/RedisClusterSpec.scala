@@ -6,8 +6,8 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
 import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
-import com.redis.RedisClient
-import com.redis.serialization.Format
+import com.redis.{GeoRadiusMember, RedisClient}
+import com.redis.serialization.{Format, Parse}
 
 import collection.mutable.WrappedArray
 

@@ -61,7 +61,8 @@ trait Redis extends IO with Protocol {
   protected def initialize : Boolean
 }
 
-trait RedisCommand extends Redis with Operations
+trait RedisCommand extends Redis
+  with Operations
   with GeoOperations
   with NodeOperations 
   with StringOperations
