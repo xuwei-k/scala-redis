@@ -1,29 +1,18 @@
 package com.redis
 
+import com.redis.common.IntSpec
+import org.junit.runner.RunWith
 import org.scalatest._
 import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 
 
 @RunWith(classOf[JUnitRunner])
 class PipelineSpec extends FunSpec
                    with Matchers
-                   with BeforeAndAfterEach
-                   with BeforeAndAfterAll
+                   with IntSpec
                    with Inside {
 
   val r = new RedisClient("localhost", 6379)
-
-  override def beforeEach = {
-  }
-
-  override def afterEach = {
-    r.flushdb
-  }
-
-  override def afterAll = {
-    r.disconnect
-  }
 
   describe("pipeline1") {
     it("should do pipelined commands") {
@@ -93,9 +82,7 @@ class PipelineSpec extends FunSpec
     inside(res) { case List(true, Some(_), Some("debasish"), Some(_), None) => }
   }
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-  import scala.concurrent.{Await, Future}
-  import scala.util.Success
+  import scala.concurrent.Await
   import scala.concurrent.duration._
 
   describe("pipeline no multi 1") {

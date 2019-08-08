@@ -1,31 +1,17 @@
 package com.redis
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
+import com.redis.common.IntSpec
 import org.junit.runner.RunWith
+import org.scalatest.{FunSpec, Matchers}
+import org.scalatest.junit.JUnitRunner
 
 
 @RunWith(classOf[JUnitRunner])
 class EvalOperationsSpec extends FunSpec
                      with Matchers
-                     with BeforeAndAfterEach
-                     with BeforeAndAfterAll {
+                     with IntSpec {
 
   val r = new RedisClient("localhost", 6379)
-
-  override def beforeEach = {
-  }
-
-  override def afterEach = {
-    r.flushdb
-  }
-
-  override def afterAll = {
-    r.disconnect
-  }
 
   describe("eval") {
     it("should eval lua code and get a string reply") {

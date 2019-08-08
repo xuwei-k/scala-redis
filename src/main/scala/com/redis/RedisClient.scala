@@ -36,7 +36,7 @@ trait Redis extends IO with Protocol {
       if (reconnect) send(command, args)(result)
       else throw e
   }
-  
+
   def send[A](command: String)(result: => A): A = try {
     write(Commands.multiBulk(List(command.getBytes("UTF-8"))))
     result
@@ -57,14 +57,14 @@ trait Redis extends IO with Protocol {
   def reconnect: Boolean = {
     disconnect && initialize
   }
-  
+
   protected def initialize : Boolean
 }
 
 trait RedisCommand extends Redis
   with Operations
   with GeoOperations
-  with NodeOperations 
+  with NodeOperations
   with StringOperations
   with ListOperations
   with SetOperations
@@ -72,14 +72,15 @@ trait RedisCommand extends Redis
   with HashOperations
   with EvalOperations
   with PubOperations
-  with HyperLogLogOperations {
+  with HyperLogLogOperations
+  with AutoCloseable {
 
   val database: Int = 0
   val secret: Option[Any] = None
-  
+
   override def initialize : Boolean = {
     if(connect) {
-      secret.foreach {s => 
+      secret.foreach {s =>
         auth(s)
       }
       selectDatabase()
@@ -88,7 +89,7 @@ trait RedisCommand extends Redis
       false
     }
   }
-  
+
   private def selectDatabase(): Unit = {
     if (database != 0)
       select(database)
@@ -97,9 +98,9 @@ trait RedisCommand extends Redis
   private def authenticate(): Unit = {
     secret.foreach(auth _)
   }
-  
+
 }
-  
+
 
 class RedisClient(override val host: String, override val port: Int,
     override val database: Int = 0, override val secret: Option[Any] = None, override val timeout : Int = 0)
@@ -133,11 +134,11 @@ class RedisClient(override val host: String, override val port: Int,
       }
       send("EXEC")(asExec(pipelineClient.handlers))
     } catch {
-      case e: RedisMultiExecException => 
+      case e: RedisMultiExecException =>
         None
     }
   }
-  
+
   import scala.concurrent.ExecutionContext.Implicits.global
   import scala.concurrent.{Future, Promise}
   import scala.util.Try
@@ -176,10 +177,10 @@ class RedisClient(override val host: String, override val port: Int,
     val f = Future {
       commands.map {command =>
         i = i + 1
-        Try { 
-          command() 
+        Try {
+          command()
         } recover {
-          case ex: java.lang.Exception => 
+          case ex: java.lang.Exception =>
             ps(i) success ex
         } foreach {r =>
           ps(i) success r
@@ -223,5 +224,9 @@ class RedisClient(override val host: String, override val port: Int,
     override def readLine = parent.readLine
     override def readCounted(count: Int) = parent.readCounted(count)
     override def initialize = parent.initialize
+
+    override def close(): Unit = parent.close()
   }
+
+  override def close(): Unit = disconnect
 }

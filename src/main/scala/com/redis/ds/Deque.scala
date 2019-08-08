@@ -85,5 +85,7 @@ class RedisDequeClient(val h: String, val p: Int, val d: Int = 0, val s: Option[
       override val database = d
       override val secret = s
       initialize
+
+      override def close(): Unit = disconnect
     }
 }

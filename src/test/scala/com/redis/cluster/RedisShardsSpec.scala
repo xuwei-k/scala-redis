@@ -1,28 +1,22 @@
 package com.redis.cluster
 
 import com.redis.RedisClient
+import com.redis.common.IntSpec
 import com.redis.serialization.Format
 import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 import org.scalatest.junit.JUnitRunner
+import org.scalatest.{FunSpec, Matchers}
 
 
 @RunWith(classOf[JUnitRunner])
 class RedisShardsSpec extends FunSpec 
                        with Matchers
-                       with BeforeAndAfterEach
-                       with BeforeAndAfterAll {
+                       with IntSpec {
 
   val nodes = List(ClusterNode("node1", "localhost", 6379), ClusterNode("node2", "localhost", 6380), ClusterNode("node3", "localhost", 6381))
   val r = new RedisShards(nodes) {
     val keyTag = Some(RegexKeyTag)
   }
-
-  override def beforeEach = {}
-
-  override def afterEach = r.flushdb
-
-  override def afterAll = r.close
 
   def formattedKey(key: Any)(implicit format: Format) = {
     format(key)
