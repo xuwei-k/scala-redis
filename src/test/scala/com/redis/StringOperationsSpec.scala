@@ -2,12 +2,10 @@ package com.redis
 
 import java.util.concurrent.TimeUnit
 import com.redis.common.IntSpec
-import org.junit.runner.RunWith
 import org.scalatest.{FunSpec, Matchers}
-import org.scalatest.junit.JUnitRunner
 
 
-@RunWith(classOf[JUnitRunner])
+
 class StringOperationsSpec extends FunSpec
 with Matchers
 with IntSpec {

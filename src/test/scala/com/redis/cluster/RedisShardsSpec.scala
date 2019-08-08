@@ -3,13 +3,11 @@ package com.redis.cluster
 import com.redis.RedisClient
 import com.redis.common.IntSpec
 import com.redis.serialization.Format
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+
 import org.scalatest.{FunSpec, Matchers}
 
 
-@RunWith(classOf[JUnitRunner])
-class RedisShardsSpec extends FunSpec 
+class RedisShardsSpec extends FunSpec
                        with Matchers
                        with IntSpec {
 

@@ -1,12 +1,10 @@
 package com.redis
 
 import com.redis.common.IntSpec
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
+
 import org.scalatest.{FunSpec, Matchers}
 
 
-@RunWith(classOf[JUnitRunner])
 class HyperLogLogOperationsSpec extends FunSpec
                          with Matchers
                          with IntSpec {

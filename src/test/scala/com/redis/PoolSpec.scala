@@ -4,15 +4,12 @@ import org.scalatest.FunSpec
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 
 import scala.concurrent._
 import scala.concurrent.duration._
 import ExecutionContext.Implicits.global
 
-@RunWith(classOf[JUnitRunner])
-class PoolSpec extends FunSpec 
+class PoolSpec extends FunSpec
                with Matchers
                with BeforeAndAfterEach
                with BeforeAndAfterAll {

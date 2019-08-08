@@ -1,13 +1,11 @@
 package com.redis.ds
 
 import com.redis.common.IntSpec
-import org.junit.runner.RunWith
 import org.scalatest.{FunSpec, Matchers}
-import org.scalatest.junit.JUnitRunner
 
 
-@RunWith(classOf[JUnitRunner])
-class DequeSpec extends FunSpec 
+
+class DequeSpec extends FunSpec
                 with Matchers
                 with IntSpec {
 

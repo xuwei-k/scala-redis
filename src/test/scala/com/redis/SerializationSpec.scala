@@ -2,12 +2,10 @@ package com.redis
 
 import com.redis.common.IntSpec
 import com.redis.serialization._
-import org.junit.runner.RunWith
 import org.scalatest.{FunSpec, Matchers}
-import org.scalatest.junit.JUnitRunner
 
-@RunWith(classOf[JUnitRunner])
-class SerializationSpec extends FunSpec 
+
+class SerializationSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 

@@ -1,13 +1,11 @@
 package com.redis
 
 import com.redis.common.IntSpec
-import org.junit.runner.RunWith
 import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
-import org.scalatest.junit.JUnitRunner
 
 
-@RunWith(classOf[JUnitRunner])
-class ListOperationsSpec extends FunSpec 
+
+class ListOperationsSpec extends FunSpec
                          with Matchers
                          with BeforeAndAfterEach
                          with IntSpec {

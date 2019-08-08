@@ -1,12 +1,10 @@
 package com.redis
 
 import com.redis.common.IntSpec
-import org.junit.runner.RunWith
 import org.scalatest._
-import org.scalatest.junit.JUnitRunner
 
 
-@RunWith(classOf[JUnitRunner])
+
 class PipelineSpec extends FunSpec
                    with Matchers
                    with IntSpec

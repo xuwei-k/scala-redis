@@ -4,14 +4,12 @@ import org.scalatest.FunSpec
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
+
 import com.redis.RedisClient.{DESC, SUM}
 import com.redis.common.IntSpec
 
 
-@RunWith(classOf[JUnitRunner])
-class SortedSetOperationsSpec extends FunSpec 
+class SortedSetOperationsSpec extends FunSpec
                         with Matchers
                         with IntSpec {
 
