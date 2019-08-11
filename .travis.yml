@@ -8,6 +8,7 @@ script:
   - travis_retry sbt "++${TRAVIS_SCALA_VERSION}" test
 jdk:
   - openjdk8
+  - openjdk11
 services:
   - redis-server
 before_script:
