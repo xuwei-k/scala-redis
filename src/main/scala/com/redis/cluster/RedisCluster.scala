@@ -60,6 +60,7 @@ case class ClusterNode(nodename: String, host: String, port: Int, database: Int 
 
 abstract class RedisCluster(hosts: ClusterNode*)
   extends RedisClusterOps
+    with WithHashRing[IdentifiableRedisClientPool]
     with BaseOps
     with NodeOps
     with StringOps
@@ -72,12 +73,12 @@ abstract class RedisCluster(hosts: ClusterNode*)
     with HashOps {
 
   // instantiating a cluster will automatically connect participating nodes to the server
-  val clients: List[IdentifiableRedisClientPool] = hosts.toList.map { h =>
+  protected[cluster] val clients: List[IdentifiableRedisClientPool] = hosts.toList.map { h =>
     new IdentifiableRedisClientPool(h)
   }
 
   // the hash ring will instantiate with the nodes up and added
-  val hr: HashRing[IdentifiableRedisClientPool] = HashRing[IdentifiableRedisClientPool](clients, POINTS_PER_SERVER)
+  override protected[cluster] val hr: HashRing[IdentifiableRedisClientPool] = HashRing[IdentifiableRedisClientPool](clients, POINTS_PER_SERVER)
 
   override def nodeForKey(key: Any)(implicit format: Format): IdentifiableRedisClientPool = {
     val bKey = format(key)
@@ -109,7 +110,7 @@ abstract class RedisCluster(hosts: ClusterNode*)
     hr.cluster.map(_.node).toList
   }
 
-  override def onAllConns[T](body: RedisClient => T): Iterable[T] =
+  override protected[cluster] def onAllConns[T](body: RedisClient => T): Iterable[T] =
     hr.cluster.map(p => p.withClient { client => body(client) }) // .forall(_ == true)
 
   def close(): Unit = hr.cluster.map(_.close)

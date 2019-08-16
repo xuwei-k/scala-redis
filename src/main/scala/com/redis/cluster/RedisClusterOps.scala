@@ -7,14 +7,14 @@ trait RedisClusterOps extends AutoCloseable {
 
   val keyTag: Option[KeyTag]
 
-  protected val POINTS_PER_SERVER = 160 // default in libmemcached
+  protected[cluster] val POINTS_PER_SERVER = 160 // default in libmemcached
 
   /**
    * get node for the key
    */
-  protected def nodeForKey(key: Any)(implicit format: Format): RedisClientPool
+  protected[cluster] def nodeForKey(key: Any)(implicit format: Format): RedisClientPool
 
-  protected def onAllConns[T](body: RedisClient => T): Iterable[T]
+  protected[cluster] def onAllConns[T](body: RedisClient => T): Iterable[T]
 
   /**
    * add server to internal pool
@@ -43,11 +43,11 @@ trait RedisClusterOps extends AutoCloseable {
    */
   def listServers: List[ClusterNode]
 
-  def processForKey[T](key: Any)(body: RedisCommand => T)(implicit format: Format): T = {
+  protected[cluster] def processForKey[T](key: Any)(body: RedisCommand => T)(implicit format: Format): T = {
     nodeForKey(key).withClient(body(_))
   }
 
-  def inSameNode[T](keys: Any*)(body: RedisClient => T)(implicit format: Format): T = {
+  protected[cluster] def inSameNode[T](keys: Any*)(body: RedisClient => T)(implicit format: Format): T = {
     val nodes = keys.toList.map(nodeForKey(_))
     if (nodes.forall(_ == nodes.head)) {
       nodes.head.withClient(body(_))

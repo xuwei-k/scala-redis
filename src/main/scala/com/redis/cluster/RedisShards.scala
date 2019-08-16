@@ -5,6 +5,7 @@ import com.redis.serialization._
 
 abstract class RedisShards(val hosts: List[ClusterNode])
   extends RedisClusterOps
+    with WithHashRing[String]
     with BaseOps
     with NodeOps
     with StringOps
@@ -21,9 +22,9 @@ abstract class RedisShards(val hosts: List[ClusterNode])
   private var clients = hosts.map { h => (h.nodename, new IdentifiableRedisClientPool(h)) } toMap
 
   // the hash ring will instantiate with the nodes up and added
-  val hr: HashRing[String] = HashRing[String](hosts.map(_.nodename), POINTS_PER_SERVER)
+  override protected[cluster] val hr: HashRing[String] = HashRing[String](hosts.map(_.nodename), POINTS_PER_SERVER)
 
-  override def nodeForKey(key: Any)(implicit format: Format): RedisClientPool = {
+  override protected[cluster] def nodeForKey(key: Any)(implicit format: Format): RedisClientPool = {
     val bKey = format(key)
     val selectedNode = hr.getNode(keyTag.flatMap(_.tag(bKey.toIndexedSeq)).getOrElse(bKey.toIndexedSeq))
     clients(selectedNode)
@@ -55,7 +56,7 @@ abstract class RedisShards(val hosts: List[ClusterNode])
     clients.values.map(_.node).toList
   }
 
-  override def onAllConns[T](body: RedisClient => T): Iterable[T] =
+  override protected[cluster] def onAllConns[T](body: RedisClient => T): Iterable[T] =
     clients.values.map(p => p.withClient { client => body(client) }) // .forall(_ == true)
 
   def close(): Unit = clients.values.map(_.close)
