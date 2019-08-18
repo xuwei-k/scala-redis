@@ -1,59 +1,58 @@
-package com.redis
+package com.redis.cluster
 
 import com.redis.api.SetApi
-import com.redis.serialization._
+import com.redis.serialization.{Format, Parse}
 
-trait SetOperations extends SetApi {
-  self: Redis =>
+trait SetOps extends SetApi {
+  rc: RedisClusterOps =>
 
   override def sadd(key: Any, value: Any, values: Any*)(implicit format: Format): Option[Long] =
-    send("SADD", List(key, value) ::: values.toList)(asLong)
+    processForKey(key)(_.sadd(key, value, values: _*))
 
   override def srem(key: Any, value: Any, values: Any*)(implicit format: Format): Option[Long] =
-    send("SREM", List(key, value) ::: values.toList)(asLong)
+    processForKey(key)(_.srem(key, value, values: _*))
 
   override def spop[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
-    send("SPOP", List(key))(asBulk)
-
-  override def spop[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
-    send("SPOP", List(key, count))(asSet)
+    processForKey(key)(_.spop[A](key))
 
   override def smove(sourceKey: Any, destKey: Any, value: Any)(implicit format: Format): Option[Long] =
-    send("SMOVE", List(sourceKey, destKey, value))(asLong)
+    inSameNode(sourceKey, destKey) { n => n.smove(sourceKey, destKey, value) }
 
-  override def scard(key: Any)(implicit format: Format): Option[Long] =
-    send("SCARD", List(key))(asLong)
+  override def scard(key: Any)(implicit format: Format): Option[Long] = processForKey(key)(_.scard(key))
 
   override def sismember(key: Any, value: Any)(implicit format: Format): Boolean =
-    send("SISMEMBER", List(key, value))(asBoolean)
+    processForKey(key)(_.sismember(key, value))
 
   override def sinter[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
-    send("SINTER", key :: keys.toList)(asSet)
+    inSameNode((key :: keys.toList): _*) { n => n.sinter[A](key, keys: _*) }
 
   override def sinterstore(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
-    send("SINTERSTORE", key :: keys.toList)(asLong)
+    inSameNode((key :: keys.toList): _*) { n => n.sinterstore(key, keys: _*) }
 
   override def sunion[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
-    send("SUNION", key :: keys.toList)(asSet)
+    inSameNode((key :: keys.toList): _*) { n => n.sunion[A](key, keys: _*) }
 
   override def sunionstore(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
-    send("SUNIONSTORE", key :: keys.toList)(asLong)
+    inSameNode((key :: keys.toList): _*) { n => n.sunionstore(key, keys: _*) }
 
   override def sdiff[A](key: Any, keys: Any*)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
-    send("SDIFF", key :: keys.toList)(asSet)
+    inSameNode((key :: keys.toList): _*) { n => n.sdiff[A](key, keys: _*) }
 
   override def sdiffstore(key: Any, keys: Any*)(implicit format: Format): Option[Long] =
-    send("SDIFFSTORE", key :: keys.toList)(asLong)
+    inSameNode((key :: keys.toList): _*) { n => n.sdiffstore(key, keys: _*) }
 
   override def smembers[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
-    send("SMEMBERS", List(key))(asSet)
+    processForKey(key)(_.smembers(key))
 
   override def srandmember[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[A] =
-    send("SRANDMEMBER", List(key))(asBulk)
+    processForKey(key)(_.srandmember(key))
 
   override def srandmember[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] =
-    send("SRANDMEMBER", List(key, count))(asList)
+    processForKey(key)(_.srandmember(key, count))
 
-  override def sscan[A](key: Any, cursor: Int, pattern: Any = "*", count: Int = 10)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] =
-    send("SSCAN", key :: cursor :: ((x: List[Any]) => if (pattern == "*") x else "match" :: pattern :: x) (if (count == 10) Nil else List("count", count)))(asPair)
+  // todo: implement
+  override def spop[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] = ???
+
+  // todo: implement
+  override def sscan[A](key: Any, cursor: Int, pattern: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] = ???
 }

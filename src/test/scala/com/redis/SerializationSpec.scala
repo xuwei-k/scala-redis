@@ -1,32 +1,15 @@
 package com.redis
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
+import com.redis.common.IntSpec
+import com.redis.serialization._
+import org.scalatest.{FunSpec, Matchers}
 
-import serialization._
 
-@RunWith(classOf[JUnitRunner])
-class SerializationSpec extends FunSpec 
+class SerializationSpec extends FunSpec
                      with Matchers
-                     with BeforeAndAfterEach
-                     with BeforeAndAfterAll {
+                     with IntSpec {
 
   val r = new RedisClient("localhost", 6379)
-
-  override def beforeEach = {
-  }
-
-  override def afterEach = {
-    r.flushdb
-  }
-
-  override def afterAll = {
-    r.disconnect
-  }
 
   it("should not conflict when using all built in parsers") {
     import Parse.Implicits._

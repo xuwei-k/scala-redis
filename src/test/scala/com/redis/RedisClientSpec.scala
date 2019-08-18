@@ -4,10 +4,7 @@ import java.net.URI
 
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 
-@RunWith(classOf[JUnitRunner])
 class RedisClientSpec extends FunSpec
   with Matchers {
 

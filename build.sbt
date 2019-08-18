@@ -22,7 +22,6 @@ lazy val coreSettings = commonSettings ++ Seq(
     "org.slf4j"               %  "slf4j-api"               % "1.7.26",
     "org.slf4j"               %  "slf4j-log4j12"           % "1.7.26"      % "provided",
     "log4j"                   %  "log4j"                   % "1.2.17"      % "provided",
-    "junit"                   %  "junit"                   % "4.12"        % "test",
     "org.scalatest"           %%  "scalatest"              % "3.0.8"       % "test"),
 
   parallelExecution in Test := false,

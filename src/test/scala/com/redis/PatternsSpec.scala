@@ -4,13 +4,10 @@ import org.scalatest.FunSpec
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 
 import Patterns._
 
-@RunWith(classOf[JUnitRunner])
-class PatternsSpec extends FunSpec 
+class PatternsSpec extends FunSpec
                with Matchers
                with BeforeAndAfterEach
                with BeforeAndAfterAll {

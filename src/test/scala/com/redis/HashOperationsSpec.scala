@@ -1,32 +1,16 @@
 package com.redis
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
+import com.redis.common.IntSpec
+import org.scalatest.{FunSpec, Matchers}
 
 
-@RunWith(classOf[JUnitRunner])
-class HashOperationsSpec extends FunSpec 
+
+class HashOperationsSpec extends FunSpec
                      with Matchers
-                     with BeforeAndAfterEach
-                     with BeforeAndAfterAll {
+                     with IntSpec {
 
   val r = new RedisClient("localhost", 6379)
 
-  override def beforeEach = {
-  }
-
-  override def afterEach = {
-    r.flushdb
-  }
-
-  override def afterAll = {
-    r.disconnect
-  }
-  
   describe("hset") {
     it("should set and get fields") {
       r.hset("hash1", "field1", "val")

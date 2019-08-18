@@ -1,28 +1,15 @@
 package com.redis
 
-import org.junit.runner.RunWith
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
-import org.scalatest.junit.JUnitRunner
+import com.redis.common.IntSpec
+
+import org.scalatest.{FunSpec, Matchers}
 
 
-@RunWith(classOf[JUnitRunner])
 class HyperLogLogOperationsSpec extends FunSpec
                          with Matchers
-                         with BeforeAndAfterEach
-                         with BeforeAndAfterAll {
+                         with IntSpec {
 
   val r = new RedisClient("localhost", 6379)
-
-  override def beforeEach = {
-  }
-
-  override def afterEach = {
-    r.flushdb
-  }
-
-  override def afterAll = {
-    r.disconnect
-  }
 
   describe("pfadd") {
     it("should return one for changed estimated cardinality") {

@@ -4,12 +4,8 @@ import org.scalatest.FunSpec
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
 
-
-@RunWith(classOf[JUnitRunner])
-class BlockingDequeSpec extends FunSpec 
+class BlockingDequeSpec extends FunSpec
                 with Matchers
                 with BeforeAndAfterEach
                 with BeforeAndAfterAll {

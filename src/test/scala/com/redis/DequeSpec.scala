@@ -1,32 +1,15 @@
 package com.redis.ds
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
+import com.redis.common.IntSpec
+import org.scalatest.{FunSpec, Matchers}
 
 
-@RunWith(classOf[JUnitRunner])
-class DequeSpec extends FunSpec 
+
+class DequeSpec extends FunSpec
                 with Matchers
-                with BeforeAndAfterEach
-                with BeforeAndAfterAll {
+                with IntSpec {
 
   val r = new RedisDequeClient("localhost", 6379).getDeque("td")
-
-  override def beforeEach = {
-    r.clear
-  }
-
-  override def afterEach = {
-    r.clear
-  }
-
-  override def afterAll = {
-    r.clear
-  }
 
   describe("addFirst and check size and added element") {
     it("should add to the head of the deque") {

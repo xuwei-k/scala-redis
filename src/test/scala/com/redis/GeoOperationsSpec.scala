@@ -1,31 +1,12 @@
 package com.redis
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-import org.scalatest.junit.JUnitRunner
-import org.junit.runner.RunWith
+import com.redis.common.IntSpec
+import org.scalatest.{FunSpec, Matchers}
 
-/**
-  * Created by alexis on 05/09/16.
-  */
 class GeoOperationsSpec extends FunSpec
   with Matchers
-  with BeforeAndAfterEach
-  with BeforeAndAfterAll {
+  with IntSpec {
 
   val r = new RedisClient("localhost", 6379)
-
-  override def beforeEach = {
-  }
-
-  override def afterEach = {
-    r.flushdb
-  }
-
-  override def afterAll = {
-    r.disconnect
-  }
 
   describe("geoadd") {
     it("should add values with their coordinates and return the added quantity") {
