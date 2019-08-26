@@ -13,7 +13,7 @@ abstract class RedisShards(val hosts: List[ClusterNode])
     with SetOps
     with SortedSetOps
     // with GeoOps todo: implement GeoApi
-    // with EvalOps todo: implement EvalApi
+    with EvalOps
     // with HyperLogLogOps todo: implement HyperLogLogApi
     with HashOps {
 

@@ -7,7 +7,7 @@ import com.redis.api._
  */
 trait ClusterIncompatibleTests
   extends BaseApiSpec
-    //    with EvalApiSpec
+    with EvalApiSpec
     //    with GeoApiSpec
     //    with HyperLogLogApiSpec
     with HashApiSpec
@@ -19,7 +19,7 @@ trait ClusterIncompatibleTests
 
   override val r: AutoCloseable
     with BaseApi
-    //    with EvalApi
+    with EvalApi
     //    with GeoApi
     //    with HyperLogLogApi
     with HashApi

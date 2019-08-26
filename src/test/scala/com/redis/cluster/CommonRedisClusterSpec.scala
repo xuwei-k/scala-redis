@@ -10,11 +10,11 @@ import scala.collection.mutable.ArrayBuffer
 // todo: remove, test every API separately
 @deprecated trait CommonRedisClusterSpec[A] extends FunSpec with Matchers with IntClusterSpec {
 
-  override val r: AutoCloseable with RedisClusterOps with WithHashRing[A]
-    with BaseApi with HashApi with ListApi with NodeApi with SetApi with SortedSetApi with StringApi = rProvider()
+  override val r = rProvider()
 
   def rProvider(): AutoCloseable with RedisClusterOps with WithHashRing[A]
     with BaseApi with HashApi with ListApi with NodeApi with SetApi with SortedSetApi with StringApi
+    with EvalApi
 
   describe("cluster operations") {
     shouldSet()
