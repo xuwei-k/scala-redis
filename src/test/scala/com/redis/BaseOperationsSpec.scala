@@ -5,7 +5,7 @@ import org.scalatest.{FunSpec, Matchers}
 
 
 
-class OperationsSpec extends FunSpec
+class BaseOperationsSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 

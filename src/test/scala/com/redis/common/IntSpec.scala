@@ -21,10 +21,11 @@ trait IntSpec extends BeforeAndAfterAll with BeforeAndAfterEach {
 
   override def beforeEach: Unit = {
     super.beforeEach()
+    r.flushall
   }
 
   override def afterEach: Unit = {
-    r.flushdb
+    r.flushall
     super.afterEach()
   }
 
