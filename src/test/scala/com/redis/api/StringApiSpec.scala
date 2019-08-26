@@ -1,16 +1,18 @@
-package com.redis
+package com.redis.api
 
 import java.util.concurrent.TimeUnit
+
 import com.redis.common.IntSpec
+import com.redis.{RedisClient, Seconds}
 import org.scalatest.{FunSpec, Matchers}
 
 
 
-class StringOperationsSpec extends FunSpec
+trait StringApiSpec extends FunSpec
 with Matchers
 with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with AutoCloseable
 
   describe("set") {
     it("should set key/value pairs") {
@@ -21,7 +23,7 @@ with IntSpec {
 
   describe("set if not exist") {
     it("should set key/value pairs with exclusiveness and expire") {
-      r.set("amit-1", "mor", "nx","ex",6)
+      r.set("amit-1", "mor", false, Seconds(6))
       r.get("amit-1") match {
         case Some(s: String) => s should equal("mor")
         case None => fail("should return mor")

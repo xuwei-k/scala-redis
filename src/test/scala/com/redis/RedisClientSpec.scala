@@ -2,11 +2,15 @@ package com.redis
 
 import java.net.URI
 
+import com.redis.api.ApiSpec
 import org.scalatest.FunSpec
 import org.scalatest.Matchers
 
 class RedisClientSpec extends FunSpec
-  with Matchers {
+  with Matchers with ApiSpec {
+
+  override val r: RedisClient =
+    new RedisClient("localhost", 6379)
 
   describe("constructor") {
     it("should parse the db-number from the path of connection uri") {

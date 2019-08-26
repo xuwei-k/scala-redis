@@ -1,15 +1,17 @@
-package com.redis
+package com.redis.api
 
+import com.redis.{RedisClient, serialization}
 import com.redis.common.IntSpec
+import com.redis.serialization.Parse
 import org.scalatest.{FunSpec, Matchers}
+import serialization._
 
-
-
-class SetOperationsSpec extends FunSpec
+trait SetApiSpec extends FunSpec
                         with Matchers
                         with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  // todo: remove HashApi, ListApi
+  override val r: BaseApi with StringApi with SetApi with AutoCloseable with HashApi with ListApi
 
   describe("sadd") {
     it("should add a non-existent value to the set") {

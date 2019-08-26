@@ -1,15 +1,15 @@
-package com.redis
+package com.redis.api
 
 import com.redis.common.IntSpec
 import org.scalatest.{FunSpec, Matchers}
 
 
 
-class HashOperationsSpec extends FunSpec
+trait HashApiSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with HashApi with AutoCloseable
 
   describe("hset") {
     it("should set and get fields") {

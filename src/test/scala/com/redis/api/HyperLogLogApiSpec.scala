@@ -1,15 +1,14 @@
-package com.redis
+package com.redis.api
 
 import com.redis.common.IntSpec
-
 import org.scalatest.{FunSpec, Matchers}
 
 
-class HyperLogLogOperationsSpec extends FunSpec
+trait HyperLogLogApiSpec extends FunSpec
                          with Matchers
                          with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with HyperLogLogApi with AutoCloseable
 
   describe("pfadd") {
     it("should return one for changed estimated cardinality") {

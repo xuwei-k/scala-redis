@@ -1,5 +1,6 @@
-package com.redis
+package com.redis.api
 
+import com.redis.RedisClient
 import com.redis.common.IntSpec
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Milliseconds, Span, Seconds => SSeconds}
@@ -9,14 +10,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
-class ListOperationsSpec extends FunSpec with ScalaFutures
+trait ListApiSpec extends FunSpec with ScalaFutures
   with Matchers
   with BeforeAndAfterEach
   with IntSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(Span(3, SSeconds), Span(100, Milliseconds))
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with ListApi with AutoCloseable
 
   describe("lpush") {
     it("should add to the head of the list") {

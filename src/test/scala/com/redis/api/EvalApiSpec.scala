@@ -1,15 +1,15 @@
-package com.redis
+package com.redis.api
 
 import com.redis.common.IntSpec
 import org.scalatest.{FunSpec, Matchers}
 
 
 
-class EvalOperationsSpec extends FunSpec
+trait EvalApiSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with EvalApi with ListApi with SortedSetApi with AutoCloseable
 
   describe("eval") {
     it("should eval lua code and get a string reply") {
@@ -60,7 +60,7 @@ class EvalOperationsSpec extends FunSpec
     }
     
     it("should evalsha lua code hash and return the integer result") {
-      import serialization.Parse.Implicits.parseInt
+      import com.redis.serialization.Parse.Implicits.parseInt
       val sha = r.scriptLoad("return 1").get
       val i: Option[Int] = r.evalSHA(sha, List(), List())
       i should equal (Some(1))
@@ -74,19 +74,19 @@ class EvalOperationsSpec extends FunSpec
        * any. If you want to return a float from Lua you should return it as a string, exactly like Redis
        * itself does (see for instance the ZSCORE command).
        */
-      import serialization.Parse.Implicits.parseDouble
+      import com.redis.serialization.Parse.Implicits.parseDouble
       val sha = r.scriptLoad("return 1.5").get
       val i: Option[Double] = r.evalSHA(sha, List(), List())
       i should equal (Some(1))
     }
     it("should evalmultisha lua code hash and return the string results") {
-      import serialization.Parse.Implicits.parseString
+      import com.redis.serialization.Parse.Implicits.parseString
       val sha = r.scriptLoad("return {'1', '2'}").get
       val i: Option[List[Option[String]]] = r.evalMultiSHA(sha, List(), List())
       i should equal (Some(List(Some("1"), Some("2"))))
     }
     it("should evalmultisha lua code hash and return the integer results") {
-      import serialization.Parse.Implicits.parseInt
+      import com.redis.serialization.Parse.Implicits.parseInt
       val sha = r.scriptLoad("return {1, 2}").get
       val i: Option[List[Option[Int]]] = r.evalMultiSHA(sha, List(), List())
       i should equal (Some(List(Some(1), Some(2))))

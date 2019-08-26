@@ -1,12 +1,14 @@
-package com.redis
+package com.redis.api
+
+import com.redis.GeoRadiusMember
 import com.redis.common.IntSpec
 import org.scalatest.{FunSpec, Matchers}
 
-class GeoOperationsSpec extends FunSpec
+trait GeoApiSpec extends FunSpec
   with Matchers
   with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with GeoApi with AutoCloseable
 
   describe("geoadd") {
     it("should add values with their coordinates and return the added quantity") {

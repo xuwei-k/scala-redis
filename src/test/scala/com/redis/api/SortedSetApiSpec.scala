@@ -1,19 +1,16 @@
-package com.redis
+package com.redis.api
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-
-import com.redis.RedisClient.{DESC, SUM}
+import com.redis.RedisClient
+import com.redis.RedisClient.DESC
 import com.redis.common.IntSpec
+import org.scalatest.{FunSpec, Matchers}
 
 
-class SortedSetOperationsSpec extends FunSpec
+trait SortedSetApiSpec extends FunSpec
                         with Matchers
                         with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with SortedSetApi with AutoCloseable
 
   import r._
 

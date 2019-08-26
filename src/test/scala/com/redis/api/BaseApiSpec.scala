@@ -1,15 +1,17 @@
-package com.redis
+package com.redis.api
 
 import com.redis.common.IntSpec
+import com.redis.{RedisClient, serialization}
 import org.scalatest.{FunSpec, Matchers}
 
 
 
-class BaseOperationsSpec extends FunSpec
+trait BaseApiSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  // todo: remove SetApi, HashApi and ListApi
+  override val r: BaseApi with StringApi with AutoCloseable with SetApi with HashApi with ListApi
 
   describe("keys") {
     it("should fetch keys") {
