@@ -1,14 +1,20 @@
 package com.redis
 
 import com.redis.common.IntSpec
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Milliseconds, Span, Seconds => SSeconds}
 import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 
-class ListOperationsSpec extends FunSpec
-                         with Matchers
-                         with BeforeAndAfterEach
-                         with IntSpec {
+class ListOperationsSpec extends FunSpec with ScalaFutures
+  with Matchers
+  with BeforeAndAfterEach
+  with IntSpec {
+
+  implicit val pc: PatienceConfig = PatienceConfig(Span(3, SSeconds), Span(100, Milliseconds))
 
   val r = new RedisClient("localhost", 6379)
 
@@ -338,22 +344,18 @@ class ListOperationsSpec extends FunSpec
 
     it("should pop blockingly") {
       val r1 = new RedisClient("localhost", 6379)
-      class Foo extends Runnable {
-        def start (): Unit = {
-          val myThread = new Thread(this) ;
-          myThread.start() ;
-        }
 
-        def run: Unit = {
-          r.brpoplpush("l1", "l2", 3) should equal(Some("a"))
-          r1.disconnect
-          r.lpop("l2") should equal(Some("a"))
-        }
+      val testVal: Future[Option[String]] = Future {
+        r1.brpoplpush("l1", "l2", 3) should equal(Some("a"))
+        r1.lpop("l2")
       }
-      (new Foo).start
-      r1.llen("l1").get should equal(0)
-      r1.lpush("l1", "a")
-      Thread.sleep(5000) // to prevent flushdb
+
+      r.llen("l1").get should equal(0)
+      r.lpush("l1", "a")
+
+      testVal.futureValue should equal(Some("a"))
+
+      r1.close()
     }
   }
 
@@ -365,23 +367,17 @@ class ListOperationsSpec extends FunSpec
   }
 
   describe("blpop") {
-    it ("should pop in a blocking mode") {
+    it("should pop in a blocking mode") {
       val r1 = new RedisClient("localhost", 6379)
-      class Foo extends Runnable {
-        def start (): Unit = {
-          val myThread = new Thread(this) ;
-          myThread.start() ;
-        }
 
-        def run: Unit = {
-          r.blpop(3, "l1", "l2") should equal(Some("l1", "a"))
-          r1.disconnect
-        }
+      val blpopV: Future[Option[(String, String)]] = Future {
+        r1.blpop(3, "l1", "l2")
       }
-      (new Foo).start
-      r1.llen("l1").get should equal(0)
-      r1.lpush("l1", "a")
-      Thread.sleep(5000) // to prevent flushdb
+      r.llen("l1").get should equal(0)
+      r.lpush("l1", "a")
+      blpopV.futureValue should equal(Some("l1", "a"))
+
+      r1.close()
     }
   }
 }
