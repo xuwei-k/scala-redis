@@ -1,64 +1,59 @@
 package com.redis.ds
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
+import com.redis.RedisCommand
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 
-class BlockingDequeSpec extends FunSpec
-                with Matchers
-                with BeforeAndAfterEach
-                with BeforeAndAfterAll {
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+class BlockingDequeSpec extends FunSpec with ScalaFutures
+  with Matchers
+  with BeforeAndAfterEach
+  with BeforeAndAfterAll {
 
   describe("blocking poll") {
     it("should pull out first element") {
-
-      val r1 = new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
-      val r2 = new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
-
-      class Foo extends Runnable {
-        def start (): Unit = {
-          val myThread = new Thread(this) ;
-          myThread.start() ;
+      beforeAndAfter { (r1, r2) =>
+        val pollV = Future {
+          r1.poll.get
         }
 
-        def run: Unit = {
-          val v = r1.poll
-          v.get should equal("foo")
-          r1.clear
-          r1.disconnect
-          r2.disconnect
-        }
+        r2.size should equal(0)
+        r2.addFirst("foo")
+        pollV.futureValue should equal("foo")
       }
-      (new Foo).start
-      r2.size should equal(0)
-      r2.addFirst("foo")
     }
   }
 
   describe("blocking poll with pollLast") {
     it("should pull out first element") {
-
-      val r1 = new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
-      val r2 = new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
-
-      class Foo extends Runnable {
-        def start (): Unit = {
-          val myThread = new Thread(this) ;
-          myThread.start() ;
+      beforeAndAfter { (r1, r2) =>
+        val pollV: Future[String] = Future {
+          r1.pollLast.get
         }
 
-        def run: Unit = {
-          val v = r1.pollLast
-          v.get should equal("foo")
-          r1.clear
-          r1.disconnect
-          r2.disconnect
-        }
+        r2.size should equal(0)
+        r2.addFirst("foo")
+        pollV.futureValue should equal("foo")
       }
-      (new Foo).start
-      r2.size should equal(0)
-      r2.addFirst("foo")
     }
   }
+
+  type BlockingDeque = RedisDeque[String] with RedisCommand
+
+  private def beforeAndAfter(t: (BlockingDeque, BlockingDeque) => Unit): Unit = {
+    val r1 = createClient()
+    val r2 = createClient()
+
+    t(r1, r2)
+
+    r1.flushall
+    r1.close()
+    r2.close()
+  }
+
+  private def createClient(): BlockingDeque =
+    new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
+
 }
