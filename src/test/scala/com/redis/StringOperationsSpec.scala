@@ -32,11 +32,9 @@ with IntSpec {
 
   describe("set if exists or not") {
     it("should set key/value pairs with exclusiveness and expire") {
-      r.set("amit-2", "mor", false, Seconds(6))
-      r.get("amit-2") match {
-        case Some(s: String) => s should equal("mor")
-        case None => fail("should return mor")
-      }
+      r.set("amit-2", "mor", false, Seconds(5))
+      r.get("amit-2").get should equal("mor")
+
       TimeUnit.SECONDS.sleep(6)
       r.get("amit-2") should equal(None)
       r.del("amit-2")
