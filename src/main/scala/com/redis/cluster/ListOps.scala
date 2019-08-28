@@ -48,10 +48,10 @@ trait ListOps extends ListApi {
   override def brpop[K, V](timeoutInSeconds: Int, key: K, keys: K*)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]): Option[(K, V)] =
     inSameNode((key :: keys.toList): _*) { n => n.brpop[K, V](timeoutInSeconds, key, keys: _*) }
 
-  // todo: implement
-  override def lpushx(key: Any, value: Any)(implicit format: Format): Option[Long] = ???
+  override def lpushx(key: Any, value: Any)(implicit format: Format): Option[Long] =
+    processForKey(key)(_.lpushx(key, value))
 
-  // todo: implement
-  override def rpushx(key: Any, value: Any)(implicit format: Format): Option[Long] = ???
+  override def rpushx(key: Any, value: Any)(implicit format: Format): Option[Long] =
+    processForKey(key)(_.rpushx(key, value))
 
 }

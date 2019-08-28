@@ -34,10 +34,6 @@ trait ClusterUnimplementedMethods
 
   override protected def setConfig(): Unit = ()
 
-  override protected def lpushx(): Unit = ()
-
-  override protected def rpushx(): Unit = ()
-
   override protected def zrangebylexT(): Unit = ()
 
   override protected def sort(): Unit = ()
