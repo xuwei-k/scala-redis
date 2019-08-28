@@ -42,6 +42,4 @@ trait ClusterUnimplementedMethods
 
   override protected def bitop(): Unit = ()
 
-  override protected def spopWithCount(): Unit = ()
-
 }
