@@ -78,7 +78,8 @@ trait HashApi {
   /**
    * Incrementally iterate hash fields and associated values (since 2.8)
    */
-  def hscan[A](key: Any, cursor: Int, pattern: Any = "*", count: Int = 10)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])]
+  def hscan[A](key: Any, cursor: Int, pattern: Any = "*", count: Int = 10)
+              (implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])]
 
 
 }

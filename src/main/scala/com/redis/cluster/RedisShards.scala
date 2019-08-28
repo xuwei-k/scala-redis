@@ -61,4 +61,9 @@ abstract class RedisShards(val hosts: List[ClusterNode])
 
   def close(): Unit = clients.values.map(_.close)
 
+  override protected[cluster] def randomNode(): IdentifiableRedisClientPool = {
+    val rni = r.nextInt(hr.cluster.size)
+    clients(hr.cluster(rni))
+  }
+
 }

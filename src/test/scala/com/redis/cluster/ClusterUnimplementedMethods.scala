@@ -30,19 +30,11 @@ trait ClusterUnimplementedMethods
     with SortedSetApi
     with StringApi
 
-  override protected def persist(): Unit = ()
-
   override protected def hset(): Unit = ()
 
   override protected def getConfig(): Unit = ()
 
-  override protected def ping(): Unit = ()
-
-  override protected def randomkey(): Unit = ()
-
   override protected def setConfig(): Unit = ()
-
-  override protected def time(): Unit = ()
 
   override protected def lpushx(): Unit = ()
 

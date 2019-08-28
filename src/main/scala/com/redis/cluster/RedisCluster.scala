@@ -115,4 +115,8 @@ abstract class RedisCluster(hosts: ClusterNode*)
 
   def close(): Unit = hr.cluster.map(_.close)
 
+  override protected[cluster] def randomNode(): RedisClientPool = {
+    val rni = r.nextInt(hr.cluster.size)
+    hr.cluster(rni)
+  }
 }

@@ -29,8 +29,6 @@ trait ClusterIncompatibleTests
     with SortedSetApi
     with StringApi
 
-  override protected def del(): Unit = ()
-
   override protected def blpop(): Unit = ()
 
   override protected def brpoplpush(): Unit = ()

@@ -3,9 +3,13 @@ package com.redis.cluster
 import com.redis.serialization.Format
 import com.redis.{RedisClient, RedisClientPool, RedisCommand}
 
+import scala.util.Random
+
 trait RedisClusterOps extends AutoCloseable {
 
-  val keyTag: Option[KeyTag]
+  protected val r = new Random()
+
+  protected val keyTag: Option[KeyTag]
 
   protected[cluster] val POINTS_PER_SERVER = 160 // default in libmemcached
 
@@ -15,6 +19,8 @@ trait RedisClusterOps extends AutoCloseable {
   protected[cluster] def nodeForKey(key: Any)(implicit format: Format): RedisClientPool
 
   protected[cluster] def onAllConns[T](body: RedisClient => T): Iterable[T]
+
+  protected[cluster] def randomNode(): RedisClientPool
 
   /**
    * add server to internal pool
@@ -45,6 +51,21 @@ trait RedisClusterOps extends AutoCloseable {
 
   protected[cluster] def processForKey[T](key: Any)(body: RedisCommand => T)(implicit format: Format): T = {
     nodeForKey(key).withClient(body(_))
+  }
+
+  // todo: need some way to combine T
+  protected[cluster] def processForKeys[T](keys: List[Any])(body: List[Any] => RedisCommand => T)
+                                          (implicit format: Format): Iterable[T] = {
+    if (keys.isEmpty) {
+      Iterable {
+        randomNode().withClient(body(keys))
+      }
+    } else {
+      keys.groupBy(nodeForKey)
+        .map { case (rcp, gkeys) =>
+          rcp.withClient(body(gkeys))
+        }
+    }
   }
 
   protected[cluster] def inSameNode[T](keys: Any*)(body: RedisClient => T)(implicit format: Format): T = {
