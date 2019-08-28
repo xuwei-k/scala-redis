@@ -30,8 +30,6 @@ trait ClusterUnimplementedMethods
     with SortedSetApi
     with StringApi
 
-  override protected def hset(): Unit = ()
-
   override protected def getConfig(): Unit = ()
 
   override protected def setConfig(): Unit = ()
