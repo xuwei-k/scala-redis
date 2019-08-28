@@ -34,8 +34,6 @@ trait ClusterUnimplementedMethods
 
   override protected def setConfig(): Unit = ()
 
-  override protected def zrangebylexT(): Unit = ()
-
   override protected def sort(): Unit = ()
 
   override protected def sortNStore(): Unit = ()
