@@ -10,6 +10,14 @@ trait GeoApiSpec extends FunSpec
 
   override val r: BaseApi with StringApi with GeoApi with AutoCloseable
 
+  geoadd()
+  geopos()
+  geohash()
+  geodist()
+  georadius()
+  georadiusbymember()
+
+  protected def geoadd(): Unit = {
   describe("geoadd") {
     it("should add values with their coordinates and return the added quantity") {
       val out = r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
@@ -21,7 +29,9 @@ trait GeoApiSpec extends FunSpec
       out should  be(Some(0))
     }
   }
+  }
 
+  protected def geopos(): Unit = {
   describe("geopos") {
     it("should correctly expose coordinates of requested members"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
@@ -44,7 +54,9 @@ trait GeoApiSpec extends FunSpec
       )
     }
   }
+  }
 
+  protected def geohash(): Unit = {
   describe("geohash") {
     it("should expose correctly the stored hash"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
@@ -57,7 +69,9 @@ trait GeoApiSpec extends FunSpec
       out should be(Some(List(None)))
     }
   }
+  }
 
+  protected def geodist(): Unit = {
   describe("geodist"){
     it("should correctly compute the distance between two objects, defaulting to meters"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
@@ -77,7 +91,9 @@ trait GeoApiSpec extends FunSpec
       out.isDefined should be(false)
     }
   }
+  }
 
+  protected def georadius(): Unit = {
   describe("georadius"){
     it("should correctly retrieve members in the radius with their hash and dist"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania")))
@@ -137,6 +153,9 @@ trait GeoApiSpec extends FunSpec
       )
     }
   }
+  }
+
+  protected def georadiusbymember(): Unit = {
   describe("georadiusbymember"){
     it("should correctly retrieve members in the radius with their hash and dist"){
       r.geoadd("Sicily", Seq(("13.361389", "38.115556", "Palermo"), ("15.087269", "37.502669", "Catania"), ("13.583333", "37.316667", "Agrigento")))
@@ -185,5 +204,6 @@ trait GeoApiSpec extends FunSpec
       act.size should equal(1)
       act should contain(Some(GeoRadiusMember(Some("Agrigento"),None,None,None)))
     }
+  }
   }
 }

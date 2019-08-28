@@ -14,13 +14,40 @@ with IntSpec {
 
   override val r: BaseApi with StringApi with AutoCloseable
 
+  append()
+  bitcount()
+  bitop()
+  decr()
+  failLaterSucceed()
+  get()
+  getbit()
+  getrange()
+  getset()
+  getWithNewlineValues()
+  getWithSpacesInKeys()
+  incr()
+  incrbyfloat()
+  mget()
+  mset()
+  set()
+  setbit()
+  setex()
+  setIfExistsOrNot()
+  setIfNotExist()
+  setnx()
+  setrange()
+  strlen()
+
+  protected def set(): Unit = {
   describe("set") {
     it("should set key/value pairs") {
       r.set("anshin-1", "debasish") should equal(true)
       r.set("anshin-2", "maulindu") should equal(true)
     }
   }
+  }
 
+  protected def setIfNotExist(): Unit = {
   describe("set if not exist") {
     it("should set key/value pairs with exclusiveness and expire") {
       r.set("amit-1", "mor", false, Seconds(6))
@@ -31,7 +58,9 @@ with IntSpec {
       r.del("amit-1")
     }
   }
+  }
 
+  protected def setIfExistsOrNot(): Unit = {
   describe("set if exists or not") {
     it("should set key/value pairs with exclusiveness and expire") {
       r.set("amit-2", "mor", false, Seconds(5))
@@ -42,7 +71,9 @@ with IntSpec {
       r.del("amit-2")
     }
   }
+  }
 
+  protected def failLaterSucceed(): Unit = {
   describe("fail to set if doesn't exist; succeed later because key doesn't exist; success later because key exists") {
     it("should fail to set key/value pairs with exclusiveness and expire") {
       r.del("amit-1")
@@ -71,7 +102,9 @@ with IntSpec {
 
     }
   }
+  }
 
+  protected def get(): Unit = {
   describe("get") {
     it("should retrieve key/value pairs for existing keys") {
       r.set("anshin-1", "debasish") should equal(true)
@@ -87,7 +120,9 @@ with IntSpec {
       }
     }
   }
+  }
 
+  protected def getset(): Unit = {
   describe("getset") {
     it("should set new values and return old values") {
       r.set("anshin-1", "debasish") should equal(true)
@@ -105,7 +140,9 @@ with IntSpec {
       }
     }
   }
+  }
 
+  protected def setnx(): Unit = {
   describe("setnx") {
     it("should set only if the key does not exist") {
       r.set("anshin-1", "debasish") should equal(true)
@@ -113,7 +150,9 @@ with IntSpec {
       r.setnx("anshin-2", "maulindu") should equal(true)
     }
   }
+  }
 
+  protected def setex(): Unit = {
   describe("setex") {
     it("should set values with expiry") {
       val key = "setex-1"
@@ -130,7 +169,9 @@ with IntSpec {
       }
     }
   }
+  }
 
+  protected def incr(): Unit = {
   describe("incr") {
     it("should increment by 1 for a key that contains a number") {
       r.set("anshin-1", "10") should equal(true)
@@ -153,7 +194,9 @@ with IntSpec {
       } catch { case ex: Throwable => ex.getMessage should startWith("ERR value is not an integer") }
     }
   }
+  }
 
+  protected def incrbyfloat(): Unit = {
   describe("incrbyfloat") {
     it("should increment values by floats") {
       r.set("k1", 10.50f)
@@ -165,7 +208,9 @@ with IntSpec {
       thrown.getMessage should include("value is not a valid float")
     }
   }
+  }
 
+  protected def decr(): Unit = {
   describe("decr") {
     it("should decrement by 1 for a key that contains a number") {
       r.set("anshin-1", "10") should equal(true)
@@ -188,7 +233,9 @@ with IntSpec {
       } catch { case ex: Throwable => ex.getMessage should startWith("ERR value is not an integer") }
     }
   }
+  }
 
+  protected def mget(): Unit = {
   describe("mget") {
     it("should get values for existing keys") {
       r.set("anshin-1", "debasish") should equal(true)
@@ -202,7 +249,9 @@ with IntSpec {
       r.mget("anshin-1", "anshin-2", "anshin-4").get should equal(List(Some("debasish"), Some("maulindu"), None))
     }
   }
+  }
 
+  protected def mset(): Unit = {
   describe("mset") {
     it("should set all keys irrespective of whether they exist") {
       r.mset(
@@ -226,7 +275,9 @@ with IntSpec {
         ("anshin-6", "nilanjan")) should equal(false)
     }
   }
+  }
 
+  protected def getWithSpacesInKeys(): Unit = {
   describe("get with spaces in keys") {
     it("should retrieve key/value pairs for existing keys") {
       r.set("anshin software", "debasish ghosh") should equal(true)
@@ -239,7 +290,9 @@ with IntSpec {
       r.get("test key with spaces").get should equal("I am a value with spaces")
     }
   }
+  }
 
+  protected def getWithNewlineValues(): Unit = {
   describe("get with newline values") {
     it("should retrieve key/value pairs for existing keys") {
       r.set("anshin-x", "debasish\nghosh\nfather") should equal(true)
@@ -249,7 +302,9 @@ with IntSpec {
       }
     }
   }
+  }
 
+  protected def setrange(): Unit = {
   describe("setrange") {
     it("should set value starting from offset") {
       r.set("key1", "hello world")
@@ -261,7 +316,9 @@ with IntSpec {
       r.get("key2").get.length should equal(11)   // zero padding
     }
   }
+  }
 
+  protected def getrange(): Unit = {
   describe("getrange") {
     it("should get value starting from start") {
       r.set("mykey", "This is a string")
@@ -271,7 +328,9 @@ with IntSpec {
       r.getrange[String]("mykey", 10, 100) should equal(Some("string"))
     }
   }
+  }
 
+  protected def strlen(): Unit = {
   describe("strlen") {
     it("should return the length of the value") {
       r.set("mykey", "Hello World")
@@ -279,7 +338,9 @@ with IntSpec {
       r.strlen("nonexisting") should equal(Some(0))
     }
   }
+  }
 
+  protected def append(): Unit = {
   describe("append") {
     it("should append value to that of a key") {
       r.exists("mykey") should equal(false)
@@ -288,7 +349,9 @@ with IntSpec {
       r.get[String]("mykey") should equal(Some("Hello World"))
     }
   }
+  }
 
+  protected def setbit(): Unit = {
   describe("setbit") {
     it("should set of clear the bit at offset in the string value stored at the key") {
       r.setbit("mykey", 7, 1) should equal(Some(0))
@@ -296,7 +359,9 @@ with IntSpec {
       String.format("%x", new java.math.BigInteger(r.get("mykey").get.getBytes("UTF-8"))) should equal("0")
     }
   }
+  }
 
+  protected def getbit(): Unit = {
   describe("getbit") {
     it("should return the bit value at offset in the string") {
       r.setbit("mykey", 7, 1) should equal(Some(0))
@@ -305,7 +370,9 @@ with IntSpec {
       r.getbit("mykey", 100) should equal(Some(0))
     }
   }
+  }
 
+  protected def bitcount(): Unit = {
   describe("bitcount") {
     it("should do a population count") {
       r.setbit("mykey", 7, 1)
@@ -314,7 +381,9 @@ with IntSpec {
       r.bitcount("mykey") should equal(Some(2))
     }
   }
+  }
 
+  protected def bitop(): Unit = {
   describe("bitop") {
     it("should apply logical operators to the srckeys and store the results in destKey") {
       // key1: 101
@@ -340,17 +409,5 @@ with IntSpec {
       r.getbit("destKey", 2) should equal(Some(0))
     }
   }
-
-  /** uncomment to test timeout : need a custom redis.conf
-  describe("timeout") {
-    it("should append value to that of a key") {
-      r.set("mykey", "Hello World")
-      r.strlen("mykey") should equal(Some(11))
-      r.strlen("nonexisting") should equal(Some(0))
-      Thread.sleep(150000)
-      r.set("nonexisting", "Hello World")
-      r.strlen("nonexisting") should equal(Some(11))
-    }
   }
-    **/
 }

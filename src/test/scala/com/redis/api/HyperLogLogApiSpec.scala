@@ -10,6 +10,11 @@ trait HyperLogLogApiSpec extends FunSpec
 
   override val r: BaseApi with StringApi with HyperLogLogApi with AutoCloseable
 
+  pfadd()
+  pfcount()
+  pfmerge()
+
+  protected def pfadd(): Unit = {
   describe("pfadd") {
     it("should return one for changed estimated cardinality") {
       r.pfadd("hll-updated-cardinality", "value1") should equal(Some(1))
@@ -25,7 +30,9 @@ trait HyperLogLogApiSpec extends FunSpec
       r.pfadd("hll-variadic-cardinality", "value1", "value2") should equal(Some(1))
     }
   }
+  }
 
+  protected def pfcount(): Unit = {
   describe("pfcount") {
     it("should return zero for an empty") {
       r.pfcount("hll-empty") should equal(Some(0))
@@ -42,7 +49,9 @@ trait HyperLogLogApiSpec extends FunSpec
       r.pfcount("hll-union-1", "hll-union-2") should equal(Some(2))
     }
   }
+  }
 
+  protected def pfmerge(): Unit = {
   describe("pfmerge") {
     it("should merge existing entries") {
       r.pfadd("hll-merge-source-1", "value1")
@@ -50,5 +59,6 @@ trait HyperLogLogApiSpec extends FunSpec
       r.pfmerge("hell-merge-destination", "hll-merge-source-1", "hll-merge-source-2")
       r.pfcount("hell-merge-destination") should equal(Some(2))
     }
+  }
   }
 }
