@@ -14,15 +14,15 @@ class PatternsSpec extends FunSpec
 
   implicit val clients = new RedisClientPool("localhost", 6379)
 
-  override def beforeEach = {
-  }
-
   override def afterEach = clients.withClient{
     client => client.flushdb
   }
 
   override def afterAll = {
-    clients.withClient{ client => client.disconnect }
+    clients.withClient{ client =>
+      client.flushall
+      client.disconnect
+    }
     clients.close
   }
 
