@@ -17,14 +17,20 @@ trait NodeOps extends NodeApi {
   override def bgrewriteaof: Boolean =
     onAllConns(_.bgrewriteaof) forall (_ == true)
 
-  // todo: implement
-  override def lastsave: Option[Long] = ???
+  override def lastsave: Option[Long] =
+    onAllConns(_.lastsave).max
 
-  // todo: implement
-  override def info: Option[String] = ???
+  override def info: Option[String] = {
+    val e = onAllConns(_.info)
+    if (e.isEmpty) {
+      None
+    } else {
+      Some(e.flatten.mkString(","))
+    }
+  }
 
-  // todo: implement
-  override def monitor: Boolean = ???
+  override def monitor: Boolean =
+    onAllConns(_.monitor).forall(_ == true)
 
   // todo: implement
   override def slaveof(options: Any): Boolean = ???

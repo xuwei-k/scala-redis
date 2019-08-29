@@ -1,20 +1,20 @@
 package com.redis.cluster
 
 import com.redis.RedisClient
-import com.redis.api.BaseApi
+import com.redis.api._
+import com.redis.common.IntClusterSpec
 import org.scalatest.{Assertion, FunSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
 // todo: remove, test every API separately
-trait CommonRedisClusterSpec[A] extends FunSpec with Matchers with IntClusterSpec {
+@deprecated trait CommonRedisClusterSpec[A] extends FunSpec with Matchers with IntClusterSpec {
 
-  type SuperCluster = BaseApi with AutoCloseable with RedisClusterOps with BaseOps with NodeOps with StringOps
-    with ListOps with SetOps with SortedSetOps with HashOps with WithHashRing[A]
+  override val r = rProvider()
 
-  override val r: SuperCluster = rProvider()
-
-  def rProvider(): SuperCluster
+  def rProvider(): AutoCloseable with RedisClusterOps with WithHashRing[A]
+    with BaseApi with HashApi with ListApi with NodeApi with SetApi with SortedSetApi with StringApi
+    with EvalApi
 
   describe("cluster operations") {
     shouldSet()

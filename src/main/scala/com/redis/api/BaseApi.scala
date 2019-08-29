@@ -147,6 +147,8 @@ trait BaseApi {
    */
   def ping: Option[String]
 
+  protected val pong: Option[String] = Some("PONG")
+
   /**
    * Marks the given keys to be watched for conditional execution of a transaction.
    */

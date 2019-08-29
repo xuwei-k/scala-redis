@@ -45,11 +45,11 @@ trait HashOps extends HashApi {
   override def hgetall1[K, V](key: Any)(implicit format: Format, parseK: Parse[K], parseV: Parse[V]): Option[Map[K, V]] =
     processForKey(key)(_.hgetall1[K, V](key))
 
-  // todo: implement
-  override def hsetnx(key: Any, field: Any, value: Any)(implicit format: Format): Boolean = ???
+  override def hsetnx(key: Any, field: Any, value: Any)(implicit format: Format): Boolean =
+    processForKey(key)(_.hsetnx(key, field, value))
 
-  // todo: implement
-  override def hincrbyfloat(key: Any, field: Any, value: Float)(implicit format: Format): Option[Float] = ???
+  override def hincrbyfloat(key: Any, field: Any, value: Float)(implicit format: Format): Option[Float] =
+    processForKey(key)(_.hincrbyfloat(key, field, value))
 
   // todo: implement
   override def hscan[A](key: Any, cursor: Int, pattern: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] = ???

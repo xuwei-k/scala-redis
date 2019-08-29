@@ -50,8 +50,8 @@ trait SetOps extends SetApi {
   override def srandmember[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[List[Option[A]]] =
     processForKey(key)(_.srandmember(key, count))
 
-  // todo: implement
-  override def spop[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] = ???
+  override def spop[A](key: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[Set[Option[A]]] =
+    processForKey(key)(_.spop[A](key, count))
 
   // todo: implement
   override def sscan[A](key: Any, cursor: Int, pattern: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] = ???

@@ -68,7 +68,7 @@ abstract class RedisCluster(hosts: ClusterNode*)
     with SetOps
     with SortedSetOps
     // with GeoOps todo: implement GeoApi
-    // with EvalOps todo: implement EvalApi
+    with EvalOps
     // with HyperLogLogOps todo: implement HyperLogLogApi
     with HashOps {
 
@@ -115,4 +115,8 @@ abstract class RedisCluster(hosts: ClusterNode*)
 
   def close(): Unit = hr.cluster.map(_.close)
 
+  override protected[cluster] def randomNode(): RedisClientPool = {
+    val rni = r.nextInt(hr.cluster.size)
+    hr.cluster(rni)
+  }
 }

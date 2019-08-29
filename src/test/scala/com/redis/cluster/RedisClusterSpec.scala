@@ -1,14 +1,20 @@
 package com.redis.cluster
 
 import com.redis.IdentifiableRedisClientPool
-import org.scalatest.Assertion
+import com.redis.common.IntClusterSpec
+import org.scalatest.{Assertion, FunSpec}
 
 import scala.collection.mutable.ArrayBuffer
 
 
-class RedisClusterSpec extends CommonRedisClusterSpec[IdentifiableRedisClientPool] {
+class RedisClusterSpec extends FunSpec
+  with IntClusterSpec
+  with ClusterUnimplementedMethods
+  with ClusterIncompatibleTests
+  with CommonRedisClusterSpec[IdentifiableRedisClientPool] {
 
-  override def rProvider(): SuperCluster = new RedisCluster(nodes: _*) {
+  override def rProvider() =
+    new RedisCluster(nodes: _*) {
     val keyTag = Some(RegexKeyTag)
   }
 

@@ -13,7 +13,7 @@ abstract class RedisShards(val hosts: List[ClusterNode])
     with SetOps
     with SortedSetOps
     // with GeoOps todo: implement GeoApi
-    // with EvalOps todo: implement EvalApi
+    with EvalOps
     // with HyperLogLogOps todo: implement HyperLogLogApi
     with HashOps {
 
@@ -60,5 +60,10 @@ abstract class RedisShards(val hosts: List[ClusterNode])
     clients.values.map(p => p.withClient { client => body(client) }) // .forall(_ == true)
 
   def close(): Unit = clients.values.map(_.close)
+
+  override protected[cluster] def randomNode(): IdentifiableRedisClientPool = {
+    val rni = r.nextInt(hr.cluster.size)
+    clients(hr.cluster(rni))
+  }
 
 }

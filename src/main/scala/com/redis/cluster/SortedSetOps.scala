@@ -78,9 +78,12 @@ trait SortedSetOps extends SortedSetApi {
       n.zinterstoreWeighted(dstKey, kws, aggregate)
     }
 
-  // todo: implement
-  override def zrangebylex[A](key: Any, min: String, max: String, limit: Option[(Int, Int)])(implicit format: Format, parse: Parse[A]): Option[List[A]] = ???
+  override def zrangebylex[A](key: Any, min: String, max: String, limit: Option[(Int, Int)])
+                             (implicit format: Format, parse: Parse[A]): Option[List[A]] =
+    processForKey(key)(_.zrangebylex(key, min, max, limit))
 
-  // todo: implement
-  override def zscan[A](key: Any, cursor: Int, pattern: Any, count: Int)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] = ???
+  override def zscan[A](key: Any, cursor: Int, pattern: Any, count: Int)
+                       (implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] =
+    processForKey(key)(_.zscan(key, cursor, pattern, count))
+
 }

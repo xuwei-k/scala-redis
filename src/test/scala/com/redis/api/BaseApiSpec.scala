@@ -1,16 +1,38 @@
-package com.redis
+package com.redis.api
 
-import com.redis.common.IntSpec
+import com.redis.common.{IntSpec, StringTypeData}
+import com.redis.serialization.Parse
 import org.scalatest.{FunSpec, Matchers}
 
+import scala.concurrent.duration._
 
 
-class OperationsSpec extends FunSpec
+trait BaseApiSpec extends FunSpec
                      with Matchers
+                     with StringTypeData
                      with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  // todo: remove SetApi, HashApi and ListApi
+  override val r: BaseApi with StringApi with AutoCloseable with SetApi with HashApi with ListApi
 
+  dbsize()
+  del()
+  exists()
+  expire()
+  getConfig()
+  getType()
+  keys()
+  persist()
+  ping()
+  randomkey()
+  rename()
+  renamenx()
+  setConfig()
+  sort()
+  sortNStore()
+  time()
+
+  protected def keys(): Unit = {
   describe("keys") {
     it("should fetch keys") {
       r.set("anshin-1", "debasish")
@@ -30,7 +52,9 @@ class OperationsSpec extends FunSpec
       }
     }
   }
+  }
 
+  protected def time(): Unit = {
   describe("time") {
     it("should fetch a list of a timestamp and the number of microseconds elapsed in current second.") {
       r.time match {
@@ -47,18 +71,22 @@ class OperationsSpec extends FunSpec
       }
     }
   }
+  }
 
+  protected def randomkey(): Unit = {
   describe("randomkey") {
     it("should give") {
       r.set("anshin-1", "debasish")
       r.set("anshin-2", "maulindu")
       r.randomkey match {
-        case Some(s: String) => s should startWith("anshin") 
+        case Some(s: String) => s should startWith("anshin")
         case None => fail("should have 2 elements")
       }
     }
   }
+  }
 
+  protected def rename(): Unit = {
   describe("rename") {
     it("should give") {
       r.set("anshin-1", "debasish")
@@ -68,7 +96,9 @@ class OperationsSpec extends FunSpec
       thrown.getMessage should equal ("ERR no such key")
     }
   }
+  }
 
+  protected def renamenx(): Unit = {
   describe("renamenx") {
     it("should give") {
       r.set("anshin-1", "debasish")
@@ -77,7 +107,9 @@ class OperationsSpec extends FunSpec
       r.renamenx("anshin-1", "anshin-2-new") should equal(false)
     }
   }
+  }
 
+  protected def dbsize(): Unit = {
   describe("dbsize") {
     it("should give") {
       r.set("anshin-1", "debasish")
@@ -85,7 +117,9 @@ class OperationsSpec extends FunSpec
       r.dbsize.get should equal(2)
     }
   }
+  }
 
+  protected def exists(): Unit = {
   describe("exists") {
     it("should give") {
       r.set("anshin-1", "debasish")
@@ -95,7 +129,9 @@ class OperationsSpec extends FunSpec
       r.exists("anshin-3") should equal(false)
     }
   }
+  }
 
+  protected def del(): Unit = {
   describe("del") {
     it("should give") {
       r.set("anshin-1", "debasish")
@@ -104,7 +140,9 @@ class OperationsSpec extends FunSpec
       r.del("anshin-2", "anshin-1").get should equal(0)
     }
   }
+  }
 
+  protected def getType(): Unit = {
   describe("type") {
     it("should give") {
       r.set("anshin-1", "debasish")
@@ -112,7 +150,9 @@ class OperationsSpec extends FunSpec
       r.getType("anshin-2").get should equal("string")
     }
   }
+  }
 
+  protected def expire(): Unit = {
   describe("expire") {
     it("should give") {
       r.set("anshin-1", "debasish")
@@ -122,7 +162,43 @@ class OperationsSpec extends FunSpec
       r.expire("anshin-3", 1000) should equal(false)
     }
   }
+  }
 
+  protected def expireAndOthers(): Unit = {
+  describe("expire, pexpire, expireat, pexpireat, ttl, pttl") {
+    withSampleData {
+      val timeout = 2.second
+      val timeoutTimestamp = System.currentTimeMillis().millis + timeout
+
+      When(s"We set expiry dates on some keys for $timeout")
+      r.expire(testKeys(0), timeout.length.toInt)
+      r.pexpire(testKeys(1), timeout.toMillis.toInt)
+      r.expireat(testKeys(2), timeoutTimestamp.toSeconds)
+      r.pexpireat(testKeys(3), timeoutTimestamp.toMillis)
+
+      Then("It returns some ttl for the keys")
+      r.ttl(testKeys(0)).get should be > 0L
+      r.pttl(testKeys(0)).get should be > 0L
+      r.ttl(testKeys(1)).get should be > 0L
+      r.pttl(testKeys(1)).get should be > 0L
+      r.ttl(testKeys(2)).get should be > 0L
+      r.pttl(testKeys(2)).get should be > 0L
+      r.ttl(testKeys(3)).get should be > 0L
+      r.pttl(testKeys(3)).get should be > 0L
+
+      Then("After ttl, keys should be long gone")
+      Thread.sleep(timeout.toMillis + 1) // sorry :(
+      val data = r.keys().get.flatten
+      data.size should be(testData.size - 4)
+      data should not contain testKeys(0)
+      data should not contain testKeys(1)
+      data should not contain testKeys(2)
+      data should not contain testKeys(1)
+    }
+  }
+  }
+
+  protected def persist(): Unit = {
   describe("persist") {
     it("should give") {
       r.set("key-2", "maulindu")
@@ -133,7 +209,9 @@ class OperationsSpec extends FunSpec
       r.persist("key-3") should equal(false)
     }
   }
+  }
 
+  protected def sort(): Unit = {
   describe("sort") {
     it("should give") {
 // sort[A](key:String, limit:Option[Pair[Int, Int]] = None, desc:Boolean = false, alpha:Boolean = false, by:Option[String] = None, get:List[String] = Nil)(implicit format:Format, parse:Parse[A]):Option[List[Option[A]]] = {
@@ -154,7 +232,9 @@ class OperationsSpec extends FunSpec
       r.sort("alltest", None, false, false, None, List("hash-*->description", "hash-*->order")).getOrElse(Nil) should equal(List(Some("one"), Some("100"), Some("two"), Some("25"), Some("three"), Some("50")))
     }
   }
-  import serialization._
+  }
+
+  protected def sortNStore(): Unit = {
   describe("sortNStore") {
     it("should give") {
       r.sadd("alltest", 10)
@@ -172,22 +252,29 @@ class OperationsSpec extends FunSpec
       r.lrange("skey", 0, 10).get should equal(List(Some(1), Some(3), Some(10), Some(30)))
     }
   }
+  }
 
+  protected def ping(): Unit = {
   describe("ping") {
     it("should return pong") {
       r.ping.get should equal("PONG")
     }
   }
+  }
 
+  protected def getConfig(): Unit = {
   describe("getConfig") {
     it("should return port") {
       r.getConfig("port").get should equal(Map("port" -> Some("6379")))
     }
   }
+  }
 
+  protected def setConfig(): Unit = {
   describe("setConfig") {
     it("should set config") {
       r.setConfig("loglevel", "debug").get should equal("OK")
     }
+  }
   }
 }

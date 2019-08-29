@@ -3,7 +3,7 @@ package com.redis
 import com.redis.api.BaseApi
 import com.redis.serialization._
 
-trait Operations extends BaseApi {
+trait BaseOperations extends BaseApi {
   self: Redis =>
 
   override def sort[A](key: String,
@@ -121,7 +121,8 @@ trait Operations extends BaseApi {
   override def scan[A](cursor: Int, pattern: Any = "*", count: Int = 10)(implicit format: Format, parse: Parse[A]): Option[(Option[Int], Option[List[Option[A]]])] =
     send("SCAN", cursor :: ((x: List[Any]) => if (pattern == "*") x else "match" :: pattern :: x) (if (count == 10) Nil else List("count", count)))(asPair)
 
-  override def ping: Option[String] = send("PING")(asString)
+  override def ping: Option[String] =
+    send("PING")(asString)
 
   override def watch(key: Any, keys: Any*)(implicit format: Format): Boolean =
     send("WATCH", key :: keys.toList)(asBoolean)

@@ -1,19 +1,29 @@
-package com.redis
+package com.redis.api
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-
-import com.redis.RedisClient.{DESC, SUM}
+import com.redis.RedisClient
+import com.redis.RedisClient.DESC
 import com.redis.common.IntSpec
+import org.scalatest.{FunSpec, Matchers}
 
 
-class SortedSetOperationsSpec extends FunSpec
+trait SortedSetApiSpec extends FunSpec
                         with Matchers
                         with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override val r: BaseApi with StringApi with SortedSetApi with AutoCloseable
+
+  zrangebylexT()
+  zaddT()
+  zremT()
+  zrangeT()
+  zrankT()
+  zremrangebyrankT()
+  zremrangebyscoreT()
+  zunionT()
+  zinterT()
+  zcountT()
+  zrangebyscoreT()
+  zrangebyscoreWithScoreT()
 
   import r._
 
@@ -26,6 +36,7 @@ class SortedSetOperationsSpec extends FunSpec
     zadd("hackers-joker", 0, "a", (0, "b"), (0, "c"), (0, "d"))
   }
 
+  protected def zrangebylexT(): Unit = {
   describe("zrangebylex") {
     it("should return the elements between min and max") {
       addKeysWithSameScore
@@ -37,7 +48,9 @@ class SortedSetOperationsSpec extends FunSpec
       zrangebylex("hackers-joker", "[a", "[c", Some(0, 1)).get should equal(List("a"))
     }
   }
+  }
 
+  protected def zaddT(): Unit = {
   describe("zadd") {
     it("should add based on proper sorted set semantics") {
       add
@@ -45,7 +58,9 @@ class SortedSetOperationsSpec extends FunSpec
       zcard("hackers").get should equal(6)
     }
   }
+  }
 
+  protected def zremT(): Unit = {
   describe("zrem") {
     it("should remove") {
       add
@@ -54,7 +69,9 @@ class SortedSetOperationsSpec extends FunSpec
       zrem("hackers", "alan kay", "linus torvalds") should equal(Some(0))
     }
   }
+  }
 
+  protected def zrangeT(): Unit = {
   describe("zrange") {
     it("should get the proper range") {
       add
@@ -62,7 +79,9 @@ class SortedSetOperationsSpec extends FunSpec
       zrangeWithScore("hackers").get should have size(6)
     }
   }
+  }
 
+  protected def zrankT(): Unit = {
   describe("zrank") {
     it ("should give proper rank") {
       add
@@ -70,14 +89,18 @@ class SortedSetOperationsSpec extends FunSpec
       zrank("hackers", "yukihiro matsumoto", reverse = true) should equal(Some(1))
     }
   }
+  }
 
+  protected def zremrangebyrankT(): Unit = {
   describe("zremrangebyrank") {
     it ("should remove based on rank range") {
       add
       zremrangebyrank("hackers", 0, 2) should equal(Some(3))
     }
   }
+  }
 
+  protected def zremrangebyscoreT(): Unit = {
   describe("zremrangebyscore") {
     it ("should remove based on score range") {
       add
@@ -85,7 +108,9 @@ class SortedSetOperationsSpec extends FunSpec
       zremrangebyscore("hackers", 0, 3) should equal(Some(0))
     }
   }
+  }
 
+  protected def zunionT(): Unit = {
   describe("zunion") {
     it ("should do a union") {
       zadd("hackers 1", 1965, "yukihiro matsumoto") should equal(Some(1))
@@ -106,7 +131,9 @@ class SortedSetOperationsSpec extends FunSpec
       zrangeWithScore("hackers weighted").get.map(_._2.toInt) should equal(List(1953, 1965, 3832, 3938, 5820, 7648))
     }
   }
+  }
 
+  protected def zinterT(): Unit = {
   describe("zinter") {
     it ("should do an intersection") {
       zadd("hackers", 1912, "alan turing") should equal(Some(1))
@@ -140,15 +167,19 @@ class SortedSetOperationsSpec extends FunSpec
       zrangeWithScore("baby boomer hackers weighted").get.map(_._2.toInt) should equal(List(1953, 1954, 1956, 1965, 1965))
     }
   }
-  
+  }
+
+  protected def zcountT(): Unit = {
   describe("zcount") {
     it ("should return the number of elements between min and max") {
       add
-      
+
       zcount("hackers", 1912, 1920) should equal(Some(2))
     }
   }
+  }
 
+  protected def zrangebyscoreT(): Unit = {
   describe("zrangebyscore") {
     it ("should return the elements between min and max") {
       add
@@ -182,7 +213,9 @@ class SortedSetOperationsSpec extends FunSpec
         List("yukihiro matsumoto", "richard stallman"))
     }
   }
+  }
 
+  protected def zrangebyscoreWithScoreT(): Unit = {
   describe("zrangebyscoreWithScore") {
     it ("should return the elements between min and max") {
       add
@@ -199,5 +232,6 @@ class SortedSetOperationsSpec extends FunSpec
       zrangebyscoreWithScore("hackers", 1940, true, 1969, true, Some(3, 1), DESC).get should equal (
         List(("alan kay", 1940.0)))
     }
+  }
   }
 }

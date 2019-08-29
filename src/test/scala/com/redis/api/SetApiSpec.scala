@@ -1,16 +1,36 @@
-package com.redis
+package com.redis.api
 
 import com.redis.common.IntSpec
 import org.scalatest.{FunSpec, Matchers}
 
-
-
-class SetOperationsSpec extends FunSpec
+trait SetApiSpec extends FunSpec
                         with Matchers
                         with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  // todo: remove HashApi, ListApi
+  override val r: BaseApi with StringApi with SetApi with AutoCloseable with HashApi with ListApi
 
+  sadd()
+  saddWithVariadicArguments()
+  scard()
+  sdiff()
+  sinter()
+  sinterEmpty()
+  sinterstore()
+  sismember()
+  smembers()
+  smove()
+  smoveError()
+  spop()
+  spopWithCount()
+  srandmember()
+  srandmemberWithCount()
+  srem()
+  sremWithVariadicArguments()
+  sunion()
+  sunionstore()
+
+  protected def sadd(): Unit = {
   describe("sadd") {
     it("should add a non-existent value to the set") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -26,7 +46,9 @@ class SetOperationsSpec extends FunSpec
       thrown.getMessage should include ("Operation against a key holding the wrong kind of value")
     }
   }
+  }
 
+  protected def saddWithVariadicArguments(): Unit = {
   describe("sadd with variadic arguments") {
     it("should add a non-existent value to the set") {
       r.sadd("set-1", "foo", "bar", "baz").get should equal(3)
@@ -34,7 +56,9 @@ class SetOperationsSpec extends FunSpec
       r.sadd("set-1", "bar").get should equal(0)
     }
   }
+  }
 
+  protected def srem(): Unit = {
   describe("srem") {
     it("should remove a value from the set") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -52,7 +76,9 @@ class SetOperationsSpec extends FunSpec
       thrown.getMessage should include ("Operation against a key holding the wrong kind of value")
     }
   }
+  }
 
+  protected def sremWithVariadicArguments(): Unit = {
   describe("srem with variadic arguments") {
     it("should remove a value from the set") {
       r.sadd("set-1", "foo", "bar", "baz", "faz").get should equal(4)
@@ -61,7 +87,9 @@ class SetOperationsSpec extends FunSpec
       r.srem("set-1", "baz", "bar").get should equal(1)
     }
   }
+  }
 
+  protected def spop(): Unit = {
   describe("spop") {
     it("should pop a random element") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -73,7 +101,9 @@ class SetOperationsSpec extends FunSpec
       r.spop("set-1") should equal(None)
     }
   }
+  }
 
+  protected def spopWithCount(): Unit = {
   describe("spop with count") {
     it("should pop a list of random members") {
       r.sadd("set-1", "one").get should equal(1)
@@ -94,7 +124,9 @@ class SetOperationsSpec extends FunSpec
       r.spop("set-1", 5).get shouldBe empty
     }
   }
+  }
 
+  protected def smove(): Unit = {
   describe("smove") {
     it("should move from one set to another") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -115,6 +147,11 @@ class SetOperationsSpec extends FunSpec
       r.smove("set-1", "set-2", "bat").get should equal(0)
       r.smove("set-3", "set-2", "bat").get should equal(0)
     }
+  }
+  }
+
+  protected def smoveError(): Unit = {
+  describe("smove") {
     it("should give error if the source or destination key is not a set") {
       r.lpush("list-1", "foo") should equal(Some(1))
       r.lpush("list-1", "bar") should equal(Some(2))
@@ -124,7 +161,9 @@ class SetOperationsSpec extends FunSpec
       thrown.getMessage should include ("Operation against a key holding the wrong kind of value")
     }
   }
+  }
 
+  protected def scard(): Unit = {
   describe("scard") {
     it("should return cardinality") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -136,7 +175,9 @@ class SetOperationsSpec extends FunSpec
       r.scard("set-1").get should equal(0)
     }
   }
+  }
 
+  protected def sismember(): Unit = {
   describe("sismember") {
     it("should return true for membership") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -154,7 +195,9 @@ class SetOperationsSpec extends FunSpec
       r.sismember("set-1", "fo") should equal(false)
     }
   }
+  }
 
+  protected def sinter(): Unit = {
   describe("sinter") {
     it("should return intersection") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -172,6 +215,11 @@ class SetOperationsSpec extends FunSpec
       r.sinter("set-1", "set-2").get should equal(Set(Some("foo"), Some("baz")))
       r.sinter("set-1", "set-3").get should equal(Set.empty)
     }
+  }
+  }
+
+  protected def sinterEmpty(): Unit = {
+  describe("sinter") {
     it("should return empty set for non-existing key") {
       r.sadd("set-1", "foo").get should equal(1)
       r.sadd("set-1", "bar").get should equal(1)
@@ -179,7 +227,9 @@ class SetOperationsSpec extends FunSpec
       r.sinter("set-1", "set-4") should equal(Some(Set()))
     }
   }
+  }
 
+  protected def sinterstore(): Unit = {
   describe("sinterstore") {
     it("should store intersection") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -207,7 +257,9 @@ class SetOperationsSpec extends FunSpec
       r.scard("set-r").get should equal(0)
     }
   }
+  }
 
+  protected def sunion(): Unit = {
   describe("sunion") {
     it("should return union") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -232,7 +284,9 @@ class SetOperationsSpec extends FunSpec
       r.sunion("set-1", "set-2").get should equal(Set(Some("foo"), Some("bar"), Some("baz")))
     }
   }
+  }
 
+  protected def sunionstore(): Unit = {
   describe("sunionstore") {
     it("should store union") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -260,7 +314,9 @@ class SetOperationsSpec extends FunSpec
       r.scard("set-r").get should equal(3)
     }
   }
+  }
 
+  protected def sdiff(): Unit = {
   describe("sdiff") {
     it("should return diff") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -284,7 +340,9 @@ class SetOperationsSpec extends FunSpec
       r.sdiff("set-1", "set-2").get should equal(Set(Some("foo"), Some("bar"), Some("baz")))
     }
   }
+  }
 
+  protected def smembers(): Unit = {
   describe("smembers") {
     it("should return members of a set") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -296,7 +354,9 @@ class SetOperationsSpec extends FunSpec
       r.smembers("set-1") should equal(Some(Set()))
     }
   }
+  }
 
+  protected def srandmember(): Unit = {
   describe("srandmember") {
     it("should return a random member") {
       r.sadd("set-1", "foo").get should equal(1)
@@ -308,7 +368,9 @@ class SetOperationsSpec extends FunSpec
       r.srandmember("set-1") should equal(None)
     }
   }
+  }
 
+  protected def srandmemberWithCount(): Unit = {
   describe("srandmember with count") {
     it("should return a list of random members") {
       r.sadd("set-1", "one").get should equal(1)
@@ -332,5 +394,6 @@ class SetOperationsSpec extends FunSpec
       // if supplied count > size, then whole set is returned
       r.srandmember("set-1", 24).get.toSet.size should equal(8)
     }
+  }
   }
 }
