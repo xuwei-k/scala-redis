@@ -1,11 +1,7 @@
 package com.redis
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
-
-import Patterns._
+import com.redis.Patterns._
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 
 class PatternsSpec extends FunSpec
                with Matchers
@@ -44,27 +40,30 @@ class PatternsSpec extends FunSpec
     println("Operations per run: " + opsPerRun * 101 + " elapsed: " + elapsed + " ops per second: " + opsPerSec)
   }
 
+  private val amountMultiplier = 1 // unit test multiplier
+  // private val amountMultiplier = 1000 // benchmark multiplier
+
   describe("scatter/gather with list test 1") {
     it("should distribute work amongst the clients") {
-      runScatterGather(2000)
+      runScatterGather(2 * amountMultiplier)
     }
   }
 
   describe("scatter/gather with list test 2") {
     it("should distribute work amongst the clients") {
-      runScatterGather(5000)
+      runScatterGather(5 * amountMultiplier)
     }
   }
 
   describe("scatter/gather with list test 3") {
     it("should distribute work amongst the clients") {
-      runScatterGather(10000)
+      runScatterGather(10 * amountMultiplier)
     }
   }
 
   describe("scatter/gather first with list test 1") {
     it("should distribute work amongst the clients") {
-      runScatterGatherFirst(5000)
+      runScatterGatherFirst(5 * amountMultiplier)
     }
   }
 }

@@ -82,50 +82,54 @@ println(len)
   }
 
   import Bench._
+
+  private val amountMultiplier = 1 // unit test multiplier
+  // private val amountMultiplier = 1000 // benchmark multiplier
+
   describe("list load test 1") {
-    it("should distribute work amongst the clients for 400000 list operations") {
-      val (s, o, r) = listLoad(2000)
-      println("400000 list operations: elapsed = " + s + " per sec = " + o)
+    it(s"should distribute work amongst the clients for ${400 * amountMultiplier} list operations") {
+      val (s, o, r) = listLoad(2 * amountMultiplier)
+      println(s"${400 * amountMultiplier} list operations: elapsed = " + s + " per sec = " + o)
       r.size should equal(100)
     }
   }
 
   describe("list load test 2") {
-    it("should distribute work amongst the clients for 1000000 list operations") {
-      val (s, o, r) = listLoad(5000)
-      println("1000000 list operations: elapsed = " + s + " per sec = " + o)
+    it(s"should distribute work amongst the clients for ${1000 * amountMultiplier} list operations") {
+      val (s, o, r) = listLoad(5 * amountMultiplier)
+      println(s"${1000 * amountMultiplier} list operations: elapsed = " + s + " per sec = " + o)
       r.size should equal(100)
     }
   }
 
   describe("list load test 3") {
-    it("should distribute work amongst the clients for 2000000 list operations") {
-      val (s, o, r) = listLoad(10000)
-      println("2000000 list operations: elapsed = " + s + " per sec = " + o)
+    it(s"should distribute work amongst the clients for ${2000 * amountMultiplier} list operations") {
+      val (s, o, r) = listLoad(10 * amountMultiplier)
+      println(s"${2000 * amountMultiplier} list operations: elapsed = " + s + " per sec = " + o)
       r.size should equal(100)
     }
   }
 
   describe("incr load test 1") {
-    it("should distribute work amongst the clients for 400000 incr operations") {
-      val (s, o, r) = incrLoad(2000)
-      println("400000 incr operations: elapsed = " + s + " per sec = " + o)
+    it(s"should distribute work amongst the clients for ${400 * amountMultiplier} incr operations") {
+      val (s, o, r) = incrLoad(2 * amountMultiplier)
+      println(s"${400 * amountMultiplier} incr operations: elapsed = " + s + " per sec = " + o)
       r.size should equal(100)
     }
   }
 
   describe("incr load test 2") {
-    it("should distribute work amongst the clients for 1000000 incr operations") {
-      val (s, o, r) = incrLoad(5000)
-      println("1000000 incr operations: elapsed = " + s + " per sec = " + o)
+    it(s"should distribute work amongst the clients for ${1000 * amountMultiplier} incr operations") {
+      val (s, o, r) = incrLoad(5 * amountMultiplier)
+      println(s"${1000 * amountMultiplier} incr operations: elapsed = " + s + " per sec = " + o)
       r.size should equal(100)
     }
   }
 
   describe("incr load test 3") {
-    it("should distribute work amongst the clients for 2000000 incr operations") {
-      val (s, o, r) = incrLoad(10000)
-      println("2000000 incr operations: elapsed = " + s + " per sec = " + o)
+    it(s"should distribute work amongst the clients for ${2000 * amountMultiplier} incr operations") {
+      val (s, o, r) = incrLoad(10 * amountMultiplier)
+      println(s"${2000 * amountMultiplier} incr operations: elapsed = " + s + " per sec = " + o)
       r.size should equal(100)
     }
   }
