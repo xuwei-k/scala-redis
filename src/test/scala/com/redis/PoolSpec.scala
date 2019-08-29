@@ -1,31 +1,34 @@
 package com.redis
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
+import com.redis.common.RedisDocker
+import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
 
 import scala.concurrent._
 import scala.concurrent.duration._
-import ExecutionContext.Implicits.global
 
 class PoolSpec extends FunSpec
                with Matchers
                with BeforeAndAfterEach
-               with BeforeAndAfterAll {
+               with RedisDocker {
 
-  implicit val clients = new RedisClientPool("localhost", 6379)
+  implicit lazy val clients: RedisClientPool = new RedisClientPool(redisContainerHost, redisContainerPort)
 
-  override def beforeEach = {
+  override protected def beforeEach(): Unit = {
+    super.beforeEach()
+    clients.port should be > 0 // initialize lazy val hack :(
   }
 
-  override def afterEach = clients.withClient{
-    client => client.flushdb
+  override def afterEach(): Unit = {
+    clients.withClient{
+      client => client.flushdb
+    }
+    super.afterEach()
   }
 
-  override def afterAll = {
+  override def afterAll(): Unit = {
     clients.withClient{ client => client.disconnect }
     clients.close
+    super.afterAll()
   }
 
   def lp(msgs: List[String]) = {
@@ -66,18 +69,6 @@ class PoolSpec extends FunSpec
       val tasks = fns map (fn => Future { fn(l) })
       val results = Await.result(Future.sequence(tasks), 60 seconds)
       results should equal(List(Some(5000), Some(5000), Some(1000)))
-    }
-  }
-
-  def leftp(msgs: List[String]) = {
-    clients.withClient {
-      client => {
-        val ln = new scala.util.Random().nextString(10)
-        msgs.foreach(client.lpush(ln, _))
-        val len = client.llen(ln)
-println(len)
-        len
-      }
     }
   }
 

@@ -1,13 +1,12 @@
 package com.redis.ds
 
 import com.redis.RedisCommand
-import org.scalatest.concurrent.ScalaFutures
+import com.redis.common.RedisDocker
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-class BlockingDequeSpec extends FunSpec with ScalaFutures
+class BlockingDequeSpec extends FunSpec with RedisDocker
   with Matchers
   with BeforeAndAfterEach
   with BeforeAndAfterAll {
@@ -54,6 +53,6 @@ class BlockingDequeSpec extends FunSpec with ScalaFutures
   }
 
   private def createClient(): BlockingDeque =
-    new RedisDequeClient("localhost", 6379).getDeque("btd", blocking = true, timeoutInSecs = 30)
+    new RedisDequeClient(redisContainerHost, redisContainerPort).getDeque("btd", blocking = true, timeoutInSecs = 30)
 
 }

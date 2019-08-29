@@ -7,7 +7,7 @@ trait StringTypeData extends IntSpec with Matchers with GivenWhenThen {
   that: Suite with Informing =>
 
   // StringApi, so we could put some data to test
-  override val r: BaseApi with StringApi with AutoCloseable
+  override protected def r: BaseApi with StringApi with AutoCloseable
 
   protected val testData: Map[String, String] = Map(
     "key1" -> "value1",

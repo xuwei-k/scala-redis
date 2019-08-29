@@ -17,7 +17,7 @@ trait ClusterIncompatibleTests
     with SortedSetApiSpec
     with StringApiSpec {
 
-  override val r: AutoCloseable
+  override protected def r: AutoCloseable
     with BaseApi
     with EvalApi
     //    with GeoApi

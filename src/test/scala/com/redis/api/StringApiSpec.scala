@@ -12,7 +12,7 @@ trait StringApiSpec extends FunSpec
 with Matchers
 with IntSpec {
 
-  override val r: BaseApi with StringApi with AutoCloseable
+  override protected def r: BaseApi with StringApi with AutoCloseable
 
   append()
   bitcount()

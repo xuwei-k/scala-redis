@@ -7,9 +7,3 @@ script:
 jdk:
   - openjdk8
   - openjdk11
-services:
-  - redis-server
-before_script:
-  - sudo redis-server /etc/redis/redis.conf --port 6380
-  - sudo redis-server /etc/redis/redis.conf --port 6381
-  - sudo redis-server /etc/redis/redis.conf --port 6382

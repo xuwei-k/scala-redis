@@ -1,18 +1,16 @@
 package com.redis
 
-import org.scalatest.FunSpec
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.Matchers
+import com.redis.common.RedisDocker
+import org.scalatest.{FunSpec, Matchers}
 
 class PubSubSpec extends FunSpec
                  with Matchers
-                 with BeforeAndAfterAll {
+                 with RedisDocker {
 
-  val r = new RedisClient("localhost", 6379)
-  val t = new RedisClient("localhost", 6379)
+  lazy val r = new RedisClient(redisContainerHost, redisContainerPort)
+  lazy val t = new RedisClient(redisContainerHost, redisContainerPort)
 
   override def afterAll(): Unit = {
-     r.flushall
      r.close()
      t.close()
   }

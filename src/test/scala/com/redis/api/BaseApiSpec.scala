@@ -13,7 +13,7 @@ trait BaseApiSpec extends FunSpec
                      with IntSpec {
 
   // todo: remove SetApi, HashApi and ListApi
-  override val r: BaseApi with StringApi with AutoCloseable with SetApi with HashApi with ListApi
+  override protected def r: BaseApi with StringApi with AutoCloseable with SetApi with HashApi with ListApi
 
   dbsize()
   del()

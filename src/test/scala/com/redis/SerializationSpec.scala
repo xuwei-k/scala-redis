@@ -9,7 +9,8 @@ class SerializationSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 
-  val r = new RedisClient("localhost", 6379)
+  override protected lazy val r: RedisClient =
+    new RedisClient(redisContainerHost, redisContainerPort)
 
   it("should not conflict when using all built in parsers") {
     import Parse.Implicits._

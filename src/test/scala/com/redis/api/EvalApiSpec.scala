@@ -10,7 +10,7 @@ trait EvalApiSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 
-  override val r: BaseApi with StringApi with EvalApi with ListApi with SortedSetApi with AutoCloseable
+  override protected def r: BaseApi with StringApi with EvalApi with ListApi with SortedSetApi with AutoCloseable
 
   describe("eval") {
     getStringReply()

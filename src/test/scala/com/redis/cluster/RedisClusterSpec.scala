@@ -19,5 +19,5 @@ class RedisClusterSpec extends FunSpec
   }
 
   override def specialClusterCheck(cluster: ArrayBuffer[IdentifiableRedisClientPool], nodename: String): Assertion =
-    cluster.find(_.node.nodename.equals(nodename)).get.port should equal(6382)
+    cluster.find(_.node.nodename.equals(nodename)).get.port should equal(redisContainerPort(dockerContainers.head))
 }

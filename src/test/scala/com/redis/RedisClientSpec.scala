@@ -9,29 +9,36 @@ import org.scalatest.Matchers
 class RedisClientSpec extends FunSpec
   with Matchers with ApiSpec {
 
-  override val r: RedisClient =
-    new RedisClient("localhost", 6379)
+  override protected lazy val r: RedisClient =
+    new RedisClient(redisContainerHost, redisContainerPort)
+
+  private lazy val redisUrl = s"$redisContainerHost:$redisContainerPort"
 
   describe("constructor") {
     it("should parse the db-number from the path of connection uri") {
-      val client = new RedisClient(new URI("redis://localhost:6379/4"))
+      val client = new RedisClient(new URI(s"redis://$redisUrl/4"))
       client.database shouldBe 4
+      client.close()
     }
 
     it("should default to db 0 for connection uri without db-number") {
-      val client = new RedisClient(new URI("redis://localhost:6379"))
+      val client = new RedisClient(new URI(s"redis://$redisUrl"))
       client.database shouldBe 0
+      client.close()
     }
   }
 
   describe("toString") {
     it("should include the db-number") {
-      new RedisClient("localhost", 6379, 1).toString shouldBe "localhost:6379/1"
+      val c = new RedisClient(redisContainerHost, redisContainerPort, 1)
+      c.toString shouldBe s"$redisUrl/1"
+      c.close()
     }
   }
 
   describe("test subscribe") {
-    val r = new RedisClient("localhost", 6379)
+    it("should subscribe") {
+    val r = new RedisClient(redisContainerHost, redisContainerPort)
   
     println(r.get("vvl:qm"))
   
@@ -58,5 +65,6 @@ class RedisClientSpec extends FunSpec
     Thread.sleep(3000)
   
     r.get("vvl:qm")
-  }
+    r.close()
+  }}
 }

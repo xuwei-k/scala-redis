@@ -8,7 +8,7 @@ trait SetApiSpec extends FunSpec
                         with IntSpec {
 
   // todo: remove HashApi, ListApi
-  override val r: BaseApi with StringApi with SetApi with AutoCloseable with HashApi with ListApi
+  override protected def r: BaseApi with StringApi with SetApi with AutoCloseable with HashApi with ListApi
 
   sadd()
   saddWithVariadicArguments()
