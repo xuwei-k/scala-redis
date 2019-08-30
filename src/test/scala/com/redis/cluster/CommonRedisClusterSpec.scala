@@ -3,16 +3,14 @@ package com.redis.cluster
 import com.redis.RedisClient
 import com.redis.api._
 import com.redis.common.IntClusterSpec
-import org.scalatest.{Assertion, FunSpec, Matchers}
-
-import scala.collection.mutable.ArrayBuffer
+import org.scalatest.{FunSpec, Matchers}
 
 // todo: remove, test every API separately
-@deprecated trait CommonRedisClusterSpec[A] extends FunSpec with Matchers with IntClusterSpec {
+@deprecated trait CommonRedisClusterSpec extends FunSpec with Matchers with IntClusterSpec {
 
   override lazy val r = rProvider()
 
-  def rProvider(): AutoCloseable with RedisClusterOps with WithHashRing[A]
+  def rProvider(): AutoCloseable with RedisClusterOps with WithHashRing[IdentifiableRedisClientPool]
     with BaseApi with HashApi with ListApi with NodeApi with SetApi with SortedSetApi with StringApi
     with EvalApi
 
@@ -127,8 +125,7 @@ import scala.collection.mutable.ArrayBuffer
       r.replaceServer(ClusterNode(nodename, redisContainerHost, redisContainerPort(dockerContainers.head)))
       r.nodeForKey("testkey1").port should equal(redisContainerPort(dockerContainers.head))
 
-      // todo: special check for RedisCluster
-      specialClusterCheck(r.hr.cluster, nodename)
+      r.hr.cluster.find(_.node.nodename.equals(nodename)).get.port should equal(redisContainerPort(dockerContainers.head))
       r.get("testkey1") should equal(Some("testvalue1"))
 
       //switch back to master. the old value is loaded
@@ -138,8 +135,6 @@ import scala.collection.mutable.ArrayBuffer
       r.close()
     }
   }
-
-  def specialClusterCheck(cluster: ArrayBuffer[A], nodename: String): Assertion = succeed
 
   def shouldRemoveNode(): Unit = {
     it("remove failure node should change hash ring order so that key on failure node should be served by other running nodes") {

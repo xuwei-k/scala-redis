@@ -1,23 +1,17 @@
 package com.redis.cluster
 
-import com.redis.IdentifiableRedisClientPool
+import com.redis.cluster.KeyTag.RegexKeyTag
 import com.redis.common.IntClusterSpec
-import org.scalatest.{Assertion, FunSpec}
-
-import scala.collection.mutable.ArrayBuffer
+import org.scalatest.FunSpec
 
 
 class RedisClusterSpec extends FunSpec
   with IntClusterSpec
   with ClusterUnimplementedMethods
   with ClusterIncompatibleTests
-  with CommonRedisClusterSpec[IdentifiableRedisClientPool] {
+  with CommonRedisClusterSpec {
 
   override def rProvider() =
-    new RedisCluster(nodes: _*) {
-    val keyTag = Some(RegexKeyTag)
-  }
+    new RedisCluster(nodes, Some(RegexKeyTag))
 
-  override def specialClusterCheck(cluster: ArrayBuffer[IdentifiableRedisClientPool], nodename: String): Assertion =
-    cluster.find(_.node.nodename.equals(nodename)).get.port should equal(redisContainerPort(dockerContainers.head))
 }
