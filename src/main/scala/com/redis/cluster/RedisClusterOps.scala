@@ -3,7 +3,7 @@ package com.redis.cluster
 import com.redis.serialization.Format
 import com.redis.{RedisClient, RedisClientPool, RedisCommand}
 
-import scala.util.Random
+import scala.util.{Random, Try}
 
 trait RedisClusterOps extends AutoCloseable {
 
@@ -25,7 +25,7 @@ trait RedisClusterOps extends AutoCloseable {
   /**
    * add server to internal pool
    */
-  def addServer(server: ClusterNode): Unit
+  def addServer(server: ClusterNode): Try[Unit]
 
   /**
    * replace a server
