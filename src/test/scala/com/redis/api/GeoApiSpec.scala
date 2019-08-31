@@ -8,7 +8,7 @@ trait GeoApiSpec extends FunSpec
   with Matchers
   with IntSpec {
 
-  override val r: BaseApi with StringApi with GeoApi with AutoCloseable
+  override protected def r: BaseApi with StringApi with GeoApi with AutoCloseable
 
   geoadd()
   geopos()

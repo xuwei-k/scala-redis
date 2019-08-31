@@ -8,7 +8,7 @@ trait HyperLogLogApiSpec extends FunSpec
                          with Matchers
                          with IntSpec {
 
-  override val r: BaseApi with StringApi with HyperLogLogApi with AutoCloseable
+  override protected def r: BaseApi with StringApi with HyperLogLogApi with AutoCloseable
 
   pfadd()
   pfcount()

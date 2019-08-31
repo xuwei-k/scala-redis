@@ -1,14 +1,15 @@
 package com.redis
 
 import com.redis.Patterns._
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSpec, Matchers}
+import com.redis.common.RedisDocker
+import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
 
 class PatternsSpec extends FunSpec
                with Matchers
                with BeforeAndAfterEach
-               with BeforeAndAfterAll {
+               with RedisDocker {
 
-  implicit val clients = new RedisClientPool("localhost", 6379)
+  implicit lazy val clients = new RedisClientPool(redisContainerHost, redisContainerPort)
 
   override def afterEach = clients.withClient{
     client => client.flushdb

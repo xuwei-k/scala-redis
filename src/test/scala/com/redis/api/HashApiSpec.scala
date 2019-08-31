@@ -8,7 +8,7 @@ trait HashApiSpec extends FunSpec
                      with Matchers
                      with IntSpec {
 
-  override val r: BaseApi with StringApi with HashApi with AutoCloseable
+  override protected def r: BaseApi with StringApi with HashApi with AutoCloseable
 
   hset()
   hset1()

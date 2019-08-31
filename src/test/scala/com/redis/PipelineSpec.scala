@@ -10,7 +10,8 @@ class PipelineSpec extends FunSpec
                    with IntSpec
                    with Inside {
 
-  val r = new RedisClient("localhost", 6379)
+  override protected lazy val r: RedisClient =
+    new RedisClient(redisContainerHost, redisContainerPort)
 
   describe("pipeline1") {
     it("should do pipelined commands") {

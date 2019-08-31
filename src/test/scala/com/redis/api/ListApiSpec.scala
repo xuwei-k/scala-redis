@@ -3,10 +3,8 @@ package com.redis.api
 import com.redis.RedisClient
 import com.redis.common.IntSpec
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Milliseconds, Span, Seconds => SSeconds}
 import org.scalatest.{BeforeAndAfterEach, FunSpec, Matchers}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 
@@ -15,9 +13,7 @@ trait ListApiSpec extends FunSpec with ScalaFutures
   with BeforeAndAfterEach
   with IntSpec {
 
-  implicit val pc: PatienceConfig = PatienceConfig(Span(3, SSeconds), Span(100, Milliseconds))
-
-  override val r: BaseApi with StringApi with ListApi with AutoCloseable
+  override protected def r: BaseApi with StringApi with ListApi with AutoCloseable
 
   blpop()
   brpoplpush()
@@ -397,7 +393,7 @@ trait ListApiSpec extends FunSpec with ScalaFutures
     }
 
     it("should pop blockingly") {
-      val r1 = new RedisClient("localhost", 6379)
+      val r1 = new RedisClient(redisContainerHost, redisContainerPort)
 
       val testVal: Future[Option[String]] = Future {
         r1.brpoplpush("l1", "l2", 3) should equal(Some("a"))
@@ -423,11 +419,10 @@ trait ListApiSpec extends FunSpec with ScalaFutures
   }
   }
 
-  // todo: this does not fail the ScalaTest even if the matcher fails
   protected def blpop(): Unit = {
   describe("blpop") {
     it("should pop in a blocking mode") {
-      val r1 = new RedisClient("localhost", 6379)
+      val r1 = new RedisClient(redisContainerHost, redisContainerPort)
 
       val blpopV: Future[Option[(String, String)]] = Future {
         r1.blpop(3, "l1", "l2")

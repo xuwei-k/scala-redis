@@ -1,20 +1,32 @@
 package com.redis.common
 
+import com.redis.api.BaseApi
 import com.redis.cluster.ClusterNode
 import com.redis.serialization.Format
-import org.scalatest.Suite
+import org.scalatest.{BeforeAndAfterEach, Suite}
 
-trait IntClusterSpec extends IntSpec {
+trait IntClusterSpec extends BeforeAndAfterEach with RedisDockerCluster {
   that: Suite =>
 
-  protected val nodes: List[ClusterNode] = List(
-    ClusterNode("node1", "localhost", 6379),
-    ClusterNode("node2", "localhost", 6380),
-    ClusterNode("node3", "localhost", 6381),
-    ClusterNode("node4", "localhost", 6382)
-  )
+  protected def r: BaseApi with AutoCloseable
+  private val nodeNamePrefix = "node"
+
+  protected lazy val nodes: List[ClusterNode] =
+    runningContainers.zipWithIndex.map { case (c, i) =>
+      ClusterNode(s"$nodeNamePrefix$i", redisContainerHost, redisContainerPort(c))
+    }
 
   def formattedKey(key: Any)(implicit format: Format): Array[Byte] = {
     format(key)
+  }
+
+  override def afterAll: Unit = {
+    r.close()
+    super.afterAll()
+  }
+
+  override def afterEach: Unit = {
+    r.flushall
+    super.afterEach()
   }
 }

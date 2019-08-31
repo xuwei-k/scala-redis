@@ -1,5 +1,6 @@
 package com.redis.ds
 
+import com.redis.RedisCommand
 import com.redis.common.IntSpec
 import org.scalatest.{FunSpec, Matchers}
 
@@ -9,7 +10,8 @@ class DequeSpec extends FunSpec
                 with Matchers
                 with IntSpec {
 
-  val r = new RedisDequeClient("localhost", 6379).getDeque("td")
+  override protected lazy val r: RedisDeque[String] with RedisCommand =
+    new RedisDequeClient(redisContainerHost, redisContainerPort).getDeque("td")
 
   describe("addFirst and check size and added element") {
     it("should add to the head of the deque") {
