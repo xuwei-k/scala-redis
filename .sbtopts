@@ -1,0 +1,3 @@
+-J-Xmx3g
+-J-XX:MaxMetaspaceSize=512m
+#-Dsbt.task.timings=true

@@ -9,7 +9,7 @@ trait IntClusterSpec extends BeforeAndAfterEach with RedisDockerCluster {
   that: Suite =>
 
   protected def r: BaseApi with AutoCloseable
-  private val nodeNamePrefix = "node"
+  protected val nodeNamePrefix = "node"
 
   protected lazy val nodes: List[ClusterNode] =
     runningContainers.zipWithIndex.map { case (c, i) =>

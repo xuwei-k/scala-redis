@@ -3,6 +3,8 @@ package com.redis.cluster
 import com.redis._
 import com.redis.serialization._
 
+import scala.util.{Failure, Success, Try}
+
 
 class RedisCluster(
                     protected val hosts: List[ClusterNode],
@@ -35,9 +37,14 @@ class RedisCluster(
     hr.getNode(keyTag.flatMap(_.tag(bKey.toIndexedSeq)).getOrElse(bKey.toIndexedSeq))
   }
 
-  override def addServer(server: ClusterNode): Unit = {
-    hr.addNode(new IdentifiableRedisClientPool(server))
-  }
+  override def addServer(server: ClusterNode): Try[Unit] = Try {
+    val instance = (new IdentifiableRedisClientPool(server))
+    if (instance.withClient(_.ping) == pong) {
+      Success(instance)
+    } else {
+      Failure(new Throwable(s"Ping method failed for $server"))
+    }
+  }.flatten.map { i => hr.addNode(i) }
 
   override def replaceServer(server: ClusterNode): Unit = {
     hr replaceNode new IdentifiableRedisClientPool(server) match {
@@ -49,8 +56,8 @@ class RedisCluster(
   override def removeServer(nodename: String): Unit =
     hr.cluster.find(_.node.nodename.equals(nodename)) match {
       case Some(pool) =>
-        hr removeNode (pool)
-        pool.close()
+        hr.removeNode(pool)
+        Try(pool.close())
       case None =>
     }
 
@@ -61,7 +68,7 @@ class RedisCluster(
   override protected[cluster] def onAllConns[T](body: RedisClient => T): Iterable[T] =
     hr.cluster.map(p => p.withClient { client => body(client) })
 
-  def close(): Unit =
+  override def close(): Unit =
     hr.cluster.foreach(_.close())
 
   override protected[cluster] def randomNode(): RedisClientPool = {

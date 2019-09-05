@@ -17,7 +17,7 @@ class WatchSpec extends FunSpec
           client.watch("key")
           client.pipeline { p =>
             p.set("key", "debasish")
-            Thread.sleep(100)
+            Thread.sleep(500)
             p.get("key")
             p.get("key1")
           }
@@ -26,7 +26,7 @@ class WatchSpec extends FunSpec
 
       val p2: Future[Boolean] = Future {
         clients.withClient { client =>
-          Thread.sleep(10)
+          Thread.sleep(50)
           client.set("key", "anshin")
         }
       }

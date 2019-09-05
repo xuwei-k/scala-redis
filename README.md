@@ -234,6 +234,27 @@ def scatterGatherFirstWithList(opsPerClient: Int)(implicit clients: RedisClientP
 
 See an example implementation using Akka at https://github.com/debasishg/akka-redis-pubsub.
 
+## RedisCluster
+
+`RedisCluster` uses data sharding (partitioning) which splits all data across available Redis instances, 
+so that every instance contains only a subset of the keys. Such process allows mitigating data grown 
+by adding more and more instances and dividing the data to smaller parts (shards or partitions). 
+
+`RedisCluster` allows user to pass a special `KeyTag`, that helps to distribute keys according to special
+requirements. Otherwise node is selected by hashing the whole key with `CRC-32` function.
+
+`RedisCluster` also allows for dynamic nodes modification with `addServer`, `replaceServer` and `removeServer` 
+methods. Note that data on the disconnected node will be lost immediately.
+What is more, since modification of the cluster impacts key distribution, some of the data scattered 
+across the cluster could be lost as well.
+
+For automatic node downtime handling, by disconnecting the offline node and reconnecting it as it comes back up,
+there is a `Reconnectable` trait. To allow such behaviour mix it into `RedisCluster` instance:
+```
+new RedisCluster(nodes, Some(NoOpKeyTag)) with Reconnectable
+```
+you can observe it's behaviour in `ReconnectableSpec` test.
+
 ## License
 
 This software is licensed under the Apache 2 license, quoted below.

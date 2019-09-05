@@ -43,8 +43,16 @@ trait RedisContainer extends DockerKit with DockerTestKit with DockerKitDockerJa
   protected val redisContainerHost: String = "localhost"
   protected val redisPort: Int = 6379
 
-  protected def createContainer(): DockerContainer =
-    DockerContainer("redis:latest", name = Some(RandomStringUtils.randomAlphabetic(10)))
-      .withPorts(redisPort -> None)
+  protected def createContainer(name: Option[String] = Some(RandomStringUtils.randomAlphabetic(10)),
+                                ports: Map[Int, Int] = Map.empty): DockerContainer = {
+    val containerPorts: Seq[(Int, Option[Int])] = if (ports.isEmpty) {
+      Seq((redisPort -> None))
+    } else {
+      ports.mapValues(i => Some(i)).toSeq
+    }
+
+    DockerContainer("redis:latest", name = name)
+      .withPorts(containerPorts: _*)
       .withReadyChecker(DockerReadyChecker.LogLineContains("Ready to accept connections"))
+  }
 }
