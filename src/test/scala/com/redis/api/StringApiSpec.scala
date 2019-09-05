@@ -2,10 +2,11 @@ package com.redis.api
 
 import java.util.concurrent.TimeUnit
 
+import com.redis.api.StringApi.{NX, XX}
 import com.redis.common.IntSpec
-import com.redis.{RedisClient, Seconds}
 import org.scalatest.{FunSpec, Matchers}
 
+import scala.concurrent.duration._
 
 
 trait StringApiSpec extends FunSpec
@@ -50,11 +51,8 @@ with IntSpec {
   protected def setIfNotExist(): Unit = {
   describe("set if not exist") {
     it("should set key/value pairs with exclusiveness and expire") {
-      r.set("amit-1", "mor", false, Seconds(6))
-      r.get("amit-1") match {
-        case Some(s: String) => s should equal("mor")
-        case None => fail("should return mor")
-      }
+      r.set("amit-1", "mor", NX, 6.seconds)
+      r.get("amit-1").get should equal("mor")
       r.del("amit-1")
     }
   }
@@ -63,7 +61,7 @@ with IntSpec {
   protected def setIfExistsOrNot(): Unit = {
   describe("set if exists or not") {
     it("should set key/value pairs with exclusiveness and expire") {
-      r.set("amit-2", "mor", false, Seconds(5))
+      r.set("amit-2", "mor", NX, 5.seconds)
       r.get("amit-2").get should equal("mor")
 
       TimeUnit.SECONDS.sleep(6)
@@ -78,28 +76,16 @@ with IntSpec {
     it("should fail to set key/value pairs with exclusiveness and expire") {
       r.del("amit-1")
       // first trying to set with 'xx' should fail since there is not key present
-      // r.set("amit-1", "mor", "xx","ex",6)
-      r.set("amit-1", "mor", true, Seconds(6))
-      r.get("amit-1") match {
-        case Some(s: String) => fail("should return None")
-        case None =>
-      }
+      r.set("amit-1", "mor", XX, 6.seconds)
+      r.get("amit-1") should be(None)
+
       // second, we set if there is no key and we should succeed
-      // r.set("amit-1", "mor", "nx","ex",6)
-      r.set("amit-1", "mor", false, Seconds(6))
-      r.get("amit-1") match {
-        case Some(s: String) => s should equal("mor")
-        case None => fail("should return mor")
-      }
+      r.set("amit-1", "mor", NX, 6.seconds)
+      r.get("amit-1").get should equal("mor")
 
       // third, since the key is now present (if second succeeded), this would succeed too
-      // r.set("amit-1", "mor", "xx","ex",6)
-      r.set("amit-1", "mor", true, Seconds(6))
-      r.get("amit-1") match {
-        case Some(s: String) => s should equal("mor")
-        case None => fail("should return mor")
-      }
-
+      r.set("amit-1", "mor", XX, 6.seconds)
+      r.get("amit-1").get should equal("mor")
     }
   }
   }
@@ -108,16 +94,10 @@ with IntSpec {
   describe("get") {
     it("should retrieve key/value pairs for existing keys") {
       r.set("anshin-1", "debasish") should equal(true)
-      r.get("anshin-1") match {
-        case Some(s: String) => s should equal("debasish")
-        case None => fail("should return debasish")
-      }
+      r.get("anshin-1").get should equal("debasish")
     }
     it("should fail for non-existent keys") {
-      r.get("anshin-2") match {
-        case Some(s: String) => fail("should return None")
-        case None =>
-      }
+      r.get("anshin-2") should be(None)
     }
   }
   }
@@ -126,18 +106,11 @@ with IntSpec {
   describe("getset") {
     it("should set new values and return old values") {
       r.set("anshin-1", "debasish") should equal(true)
-      r.get("anshin-1") match {
-        case Some(s: String) => s should equal("debasish")
-        case None => fail("should return debasish")
-      }
-      r.getset("anshin-1", "maulindu") match {
-        case Some(s: String) => s should equal("debasish")
-        case None => fail("should return debasish")
-      }
-      r.get("anshin-1") match {
-        case Some(s: String) => s should equal("maulindu")
-        case None => fail("should return maulindu")
-      }
+      r.get("anshin-1").get should equal("debasish")
+
+      r.getset("anshin-1", "maulindu").get should equal("debasish")
+
+      r.get("anshin-1").get should equal("maulindu")
     }
   }
   }
@@ -158,15 +131,10 @@ with IntSpec {
       val key = "setex-1"
       val value = "value"
       r.setex(key, 1, value) should equal(true)
-      r.get(key) match {
-        case Some(s:String) => s should equal(value)
-        case None => fail("should return value")
-      }
+      r.get(key).get should equal(value)
+
       Thread.sleep(2000)
-      r.get(key) match {
-        case Some(_) => fail("key-1 should have expired")
-        case None =>
-      }
+      r.get(key) should be(None)
     }
   }
   }
@@ -281,10 +249,7 @@ with IntSpec {
   describe("get with spaces in keys") {
     it("should retrieve key/value pairs for existing keys") {
       r.set("anshin software", "debasish ghosh") should equal(true)
-      r.get("anshin software") match {
-        case Some(s: String) => s should equal("debasish ghosh")
-        case None => fail("should return debasish ghosh")
-      }
+      r.get("anshin software").get should equal("debasish ghosh")
 
       r.set("test key with spaces", "I am a value with spaces")
       r.get("test key with spaces").get should equal("I am a value with spaces")
@@ -296,10 +261,7 @@ with IntSpec {
   describe("get with newline values") {
     it("should retrieve key/value pairs for existing keys") {
       r.set("anshin-x", "debasish\nghosh\nfather") should equal(true)
-      r.get("anshin-x") match {
-        case Some(s: String) => s should equal("debasish\nghosh\nfather")
-        case None => fail("should return debasish")
-      }
+      r.get("anshin-x").get should equal("debasish\nghosh\nfather")
     }
   }
   }
