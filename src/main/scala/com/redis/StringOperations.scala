@@ -1,26 +1,23 @@
 package com.redis
 
 import com.redis.api.StringApi
+import com.redis.api.StringApi.{Always, SetBehaviour}
 import com.redis.serialization._
+
+import scala.concurrent.duration.Duration
 
 trait StringOperations extends StringApi {
   self: Redis =>
 
-  override def set(key: Any, value: Any)(implicit format: Format): Boolean =
-    send("SET", List(key, value))(asBoolean)
-
-  @deprecated("Use the more typesafe variant", "2.14")
-  def set(key: Any, value: Any, nxxx: Any, expx: Any, time: Long): Boolean = {
-    send("SET", List(key, value, nxxx, expx, time))(asBoolean)
-  }
-
-  override def set(key: Any, value: Any, onlyIfExists: Boolean, time: SecondsOrMillis): Boolean = {
-    val nxxx = if (onlyIfExists) "XX" else "NX"
-    val expx = time match {
-      case Seconds(v) => List("EX", v)
-      case Millis(v) => List("PX", v)
+  override def set(key: Any, value: Any, whenSet: SetBehaviour = Always, expire: Duration = null)
+                  (implicit format: Format): Boolean = {
+    val expireCmd = if (expire != null) {
+      List("PX", expire.toMillis.toString)
+    } else {
+      List.empty
     }
-    send("SET", List(key, value, nxxx) ++ expx)(asBoolean)
+    val cmd = List(key, value) ::: expireCmd ::: whenSet.command
+    send("SET", cmd)(asBoolean)
   }
 
   override def get[A](key: Any)(implicit format: Format, parse: Parse[A]): Option[A] =

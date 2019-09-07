@@ -9,6 +9,8 @@ package object cluster {
    * by a name, so functions like <tt>replaceServer</tt> works seamlessly.
    */
   case class ClusterNode(nodename: String, host: String, port: Int, database: Int = 0, maxIdle: Int = 8, secret: Option[Any] = None, timeout: Int = 0) {
+    assert(nodename.nonEmpty)
+
     override def toString: String = nodename
   }
 

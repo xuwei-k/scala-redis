@@ -1,16 +1,27 @@
 package com.redis.api
 
 import com.redis.SecondsOrMillis
+import com.redis.api.StringApi.{Always, NX, SetBehaviour, XX}
 import com.redis.serialization.{Format, Parse}
+
+import scala.concurrent.duration.Duration
 
 trait StringApi {
 
-  /**
-   * sets the key with the specified value.
-   */
-  def set(key: Any, value: Any)(implicit format: Format): Boolean
+  @deprecated("Use implementation with scala.concurrent.duration.Duration and SetBehaviour", "3.10")
+  def set(key: Any, value: Any, onlyIfExists: Boolean, time: SecondsOrMillis): Boolean =
+    set(key, value, if (onlyIfExists) XX else NX, time.toDuration)
 
-  def set(key: Any, value: Any, onlyIfExists: Boolean, time: SecondsOrMillis): Boolean
+  /**
+    * sets the key with the specified value.
+    * Starting with Redis 2.6.12 SET supports a set of options that modify its behavior:
+    *
+    * NX -- Only set the key if it does not already exist.
+    * XX -- Only set the key if it already exist.
+    * PX milliseconds -- Set the specified expire time, in milliseconds.
+    */
+  def set(key: Any, value: Any, whenSet: SetBehaviour = Always, expire: Duration = null)
+         (implicit format: Format): Boolean
 
   /**
    * gets the value for the specified key.
@@ -110,4 +121,15 @@ trait StringApi {
    * Count the number of set bits in the given key within the optional range
    */
   def bitcount(key: Any, range: Option[(Int, Int)] = None)(implicit format: Format): Option[Int]
+}
+
+object StringApi {
+
+  // @formatter:off
+  sealed abstract class SetBehaviour(val command: List[String]) // singleton list
+  case object NX     extends SetBehaviour(List("NX"))
+  case object XX     extends SetBehaviour(List("XX"))
+  case object Always extends SetBehaviour(List.empty)
+  // @formatter:on
+
 }
