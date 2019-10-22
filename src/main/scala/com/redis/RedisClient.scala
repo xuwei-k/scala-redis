@@ -30,10 +30,10 @@ trait Redis extends IO with Protocol {
     result
   } catch {
     case e: RedisConnectionException =>
-      if (reconnect) send(command, args)(result)
+      if (disconnect) send(command, args)(result)
       else throw e
     case e: SocketException =>
-      if (reconnect) send(command, args)(result)
+      if (disconnect) send(command, args)(result)
       else throw e
   }
 
@@ -42,10 +42,10 @@ trait Redis extends IO with Protocol {
     result
   } catch {
     case e: RedisConnectionException =>
-      if (reconnect) send(command)(result)
+      if (disconnect) send(command)(result)
       else throw e
     case e: SocketException =>
-      if (reconnect) send(command)(result)
+      if (disconnect) send(command)(result)
       else throw e
   }
 
@@ -54,11 +54,6 @@ trait Redis extends IO with Protocol {
   protected def flattenPairs(in: Iterable[Product2[Any, Any]]): List[Any] =
     in.iterator.flatMap(x => Iterator(x._1, x._2)).toList
 
-  def reconnect: Boolean = {
-    disconnect && initialize
-  }
-
-  protected def initialize : Boolean
 }
 
 trait RedisCommand extends Redis
@@ -78,16 +73,11 @@ trait RedisCommand extends Redis
   val database: Int = 0
   val secret: Option[Any] = None
 
-  override def initialize : Boolean = {
-    if(connect) {
-      secret.foreach {s =>
-        auth(s)
-      }
-      selectDatabase()
-      true
-    } else {
-      false
+  override def onConnect: Unit = {
+    secret.foreach {s =>
+      auth(s)
     }
+    selectDatabase()
   }
 
   private def selectDatabase(): Unit = {
@@ -105,8 +95,6 @@ trait RedisCommand extends Redis
 class RedisClient(override val host: String, override val port: Int,
     override val database: Int = 0, override val secret: Option[Any] = None, override val timeout : Int = 0)
   extends RedisCommand with PubSub {
-
-  initialize
 
   def this() = this("localhost", 6379)
   def this(connectionUri: java.net.URI) = this(
@@ -217,13 +205,12 @@ class RedisClient(override val host: String, override val port: Int,
     // TODO: Find a better abstraction
     override def connected = parent.connected
     override def connect = parent.connect
-    override def reconnect = parent.reconnect
     override def disconnect = parent.disconnect
     override def clearFd = parent.clearFd
     override def write(data: Array[Byte]) = parent.write(data)
     override def readLine = parent.readLine
     override def readCounted(count: Int) = parent.readCounted(count)
-    override def initialize = parent.initialize
+    override def onConnect() = parent.onConnect()
 
     override def close(): Unit = parent.close()
   }
