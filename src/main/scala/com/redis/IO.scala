@@ -19,6 +19,8 @@ trait IO extends Log {
     socket != null && socket.isBound && !socket.isClosed && socket.isConnected && !socket.isInputShutdown && !socket.isOutputShutdown
   }
 
+  def onConnect(): Unit
+
   // Connects the socket, and sets the input and output streams.
   def connect: Boolean = {
     try {
@@ -31,6 +33,7 @@ trait IO extends Log {
 
       out = socket.getOutputStream
       in = new BufferedInputStream(socket.getInputStream)
+      onConnect()
       true
     } catch {
       case x: Throwable =>
