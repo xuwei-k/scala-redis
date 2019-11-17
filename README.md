@@ -26,11 +26,11 @@ http://redis.io
 
 ## Installation
 
-Add to `Build.scala` or `build.sbt`
+Add to `build.sbt`
 
 ```scala
 libraryDependencies ++= Seq(
-    "net.debasishg" %% "redisclient" % "3.10"
+    "net.debasishg" %% "redisclient" % "3.20"
 )
 ```
 
