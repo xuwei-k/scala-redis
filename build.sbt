@@ -24,11 +24,11 @@ def dockerTestKit(version: String): Seq[ModuleID] = {
 lazy val coreSettings = commonSettings ++ Seq(
   name := "RedisClient",
   libraryDependencies ++= Seq(
-    "org.apache.commons"      %  "commons-pool2"           % "2.7.0",
-    "org.slf4j"               %  "slf4j-api"               % "1.7.28",
-    "org.slf4j"               %  "slf4j-log4j12"           % "1.7.28"      % "provided",
+    "org.apache.commons"      %  "commons-pool2"           % "2.8.0",
+    "org.slf4j"               %  "slf4j-api"               % "1.7.29",
+    "org.slf4j"               %  "slf4j-log4j12"           % "1.7.29"      % "provided",
     "log4j"                   %  "log4j"                   % "1.2.17"      % "provided",
-    "org.scalatest"           %% "scalatest"               % "3.0.8"       % "test"
+    "org.scalatest"           %% "scalatest"               % "3.1.0"       % "test"
   ) ++
     (scalaBinaryVersion.value match {
       case "2.10" => dockerTestKit("0.9.8")
