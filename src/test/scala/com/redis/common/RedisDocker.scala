@@ -1,8 +1,10 @@
 package com.redis.common
 
+import java.io.File
+
 import com.whisk.docker.impl.dockerjava.DockerKitDockerJava
 import com.whisk.docker.scalatest.DockerTestKit
-import com.whisk.docker.{DockerContainer, DockerKit, DockerReadyChecker}
+import com.whisk.docker.{DockerContainer, DockerKit, DockerReadyChecker, VolumeMapping}
 import org.apache.commons.lang.RandomStringUtils
 import org.scalatest.Suite
 import org.scalatest.concurrent.ScalaFutures
@@ -15,7 +17,7 @@ trait RedisDockerCluster extends RedisContainer {
   protected def redisContainerPort(container: DockerContainer): Int = container.getPorts().futureValue.apply(redisPort)
 
   protected lazy val runningContainers: List[DockerContainer] = (0 until 4)
-    .map(i => createContainer())
+    .map(_ => createContainer())
     .toList
 
   abstract override def dockerContainers: List[DockerContainer] =
@@ -35,6 +37,16 @@ trait RedisDocker extends RedisContainer {
 
 }
 
+trait RedisDockerSSL extends RedisDocker {
+  that: Suite =>
+
+  private val certsPath = new File("src/test/resources/certs").getAbsolutePath
+
+  override protected def baseContainer(name: Option[String]) =
+    DockerContainer("madflojo/redis-tls:latest", name = name)
+      .withVolumes(Seq(VolumeMapping(certsPath, "/certs")))
+}
+
 trait RedisContainer extends DockerKit with DockerTestKit with DockerKitDockerJava with ScalaFutures {
   that: Suite =>
 
@@ -42,6 +54,8 @@ trait RedisContainer extends DockerKit with DockerTestKit with DockerKitDockerJa
 
   protected val redisContainerHost: String = "localhost"
   protected val redisPort: Int = 6379
+
+  protected def baseContainer(name: Option[String]) = DockerContainer("redis:latest", name=name)
 
   protected def createContainer(name: Option[String] = Some(RandomStringUtils.randomAlphabetic(10)),
                                 ports: Map[Int, Int] = Map.empty): DockerContainer = {
@@ -51,8 +65,7 @@ trait RedisContainer extends DockerKit with DockerTestKit with DockerKitDockerJa
       ports.mapValues(i => Some(i)).toSeq
     }
 
-    DockerContainer("redis:latest", name = name)
-      .withPorts(containerPorts: _*)
+    baseContainer(name).withPorts(containerPorts: _*)
       .withReadyChecker(DockerReadyChecker.LogLineContains("Ready to accept connections"))
   }
 }

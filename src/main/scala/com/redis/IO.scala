@@ -2,6 +2,7 @@ package com.redis
 
 import java.io._
 import java.net.{InetSocketAddress, Socket, SocketTimeoutException}
+import javax.net.ssl.SSLContext
 
 import com.redis.serialization.Parse.parseStringSafe
 
@@ -9,6 +10,8 @@ trait IO extends Log {
   val host: String
   val port: Int
   val timeout: Int
+
+  val sslContext: Option[SSLContext] = None
 
   var socket: Socket = _
   var out: OutputStream = _
@@ -30,6 +33,10 @@ trait IO extends Log {
       socket.setSoTimeout(timeout)
       socket.setKeepAlive(true)
       socket.setTcpNoDelay(true)
+
+      sslContext.foreach { sc =>
+        socket = sc.getSocketFactory().createSocket(socket, host, port, true)
+      }
 
       out = socket.getOutputStream
       in = new BufferedInputStream(socket.getInputStream)

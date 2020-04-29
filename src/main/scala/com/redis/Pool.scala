@@ -1,16 +1,17 @@
 package com.redis
 
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
 
 import org.apache.commons.pool2._
 import org.apache.commons.pool2.impl._
 
-private [redis] class RedisClientFactory(val host: String, val port: Int, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0)
+private [redis] class RedisClientFactory(val host: String, val port: Int, val database: Int = 0, val secret: Option[Any] = None, val timeout : Int = 0, val sslContext: Option[SSLContext] = None)
   extends PooledObjectFactory[RedisClient] {
 
   // when we make an object it's already connected
   override def makeObject: PooledObject[RedisClient] = {
-    new DefaultPooledObject[RedisClient](new RedisClient(host, port, database, secret, timeout))
+    new DefaultPooledObject[RedisClient](new RedisClient(host, port, database, secret, timeout, sslContext))
   }
 
   // quit & disconnect
@@ -40,7 +41,8 @@ class RedisClientPool(
                        val secret: Option[Any] = None,
                        val timeout: Int = 0,
                        val maxConnections: Int = RedisClientPool.UNLIMITED_CONNECTIONS,
-                       val poolWaitTimeout: Long = 3000
+                       val poolWaitTimeout: Long = 3000,
+                       val sslContext: Option[SSLContext] = None
                      ) {
 
   val objectPoolConfig = new GenericObjectPoolConfig[RedisClient]
@@ -52,7 +54,7 @@ class RedisClientPool(
 
   val abandonedConfig = new AbandonedConfig
   abandonedConfig.setRemoveAbandonedTimeout(TimeUnit.MILLISECONDS.toSeconds(poolWaitTimeout).toInt)
-  val pool = new GenericObjectPool(new RedisClientFactory(host, port, database, secret, timeout), objectPoolConfig,abandonedConfig)
+  val pool = new GenericObjectPool(new RedisClientFactory(host, port, database, secret, timeout, sslContext), objectPoolConfig,abandonedConfig)
   override def toString: String = host + ":" + String.valueOf(port)
 
   def withClient[T](body: RedisClient => T): T = {
@@ -67,4 +69,3 @@ class RedisClientPool(
   // close pool & free resources
   def close(): Unit = pool.close()
 }
-
