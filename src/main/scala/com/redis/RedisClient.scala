@@ -1,6 +1,7 @@
 package com.redis
 
 import java.net.SocketException
+import javax.net.ssl.SSLContext
 
 import com.redis.serialization.Format
 
@@ -93,7 +94,7 @@ trait RedisCommand extends Redis
 
 
 class RedisClient(override val host: String, override val port: Int,
-    override val database: Int = 0, override val secret: Option[Any] = None, override val timeout : Int = 0)
+    override val database: Int = 0, override val secret: Option[Any] = None, override val timeout : Int = 0, override val sslContext: Option[SSLContext] = None)
   extends RedisCommand with PubSub {
 
   def this() = this("localhost", 6379)
