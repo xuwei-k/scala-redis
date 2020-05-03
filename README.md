@@ -64,13 +64,13 @@ Let us connect and get a key:
 Let us try out some List operations:
 
     scala> r.lpush("list-1", "foo")
-    res0: Option[Int] = Some(1)
+    res0: Option[Long] = Some(1)
 
     scala> r.rpush("list-1", "bar")
-    res1: Option[Int] = Some(2)
+    res1: Option[Long] = Some(2)
 
     scala> r.llen("list-1")
-    res2: Option[Int] = Some(2)
+    res2: Option[Long] = Some(2)
 
 Let us look at some serialization stuff:
 
